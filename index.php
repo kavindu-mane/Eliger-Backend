@@ -1,8 +1,11 @@
 <?php
+// for remove request blocking
+header("Access-Control-Allow-Origin:*");
+header("Access-Control-Allow-Headers:Content-Type");
 
 use Bramus\Router\Router;
 use Dotenv\Dotenv;
-// use EligerBackend\controller\Controller;
+use EligerBackend\Controller\Controller;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -13,7 +16,11 @@ $app = new Router();
 $app->setNamespace('\EligerBackend');
 $app->setBasePath('/');
 
+
 $app->get("/", function () {
-   header("Location: http://localhost:3000/");
+    header("Location: http://localhost:3000/");
+});
+$app->post("/register", function () {
+    Controller::post_router("register_process");
 });
 $app->run();

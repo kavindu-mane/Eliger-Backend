@@ -4,7 +4,7 @@
   "license": "Apache-2.0 license",
   "autoload": {
     "psr-4": {
-      "EligerBackend\\": "/App"
+      "EligerBackend\\": "App/"
     }
   },
   "authors": [
