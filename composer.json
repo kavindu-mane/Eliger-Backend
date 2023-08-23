@@ -1,0 +1,36 @@
+{
+  "name": "kavindu/eliger-backend",
+  "description": "Backend of Eliger project.",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "EligerBackend\\": "/App"
+    }
+  },
+  "authors": [
+    {
+      "name": "Kavindu Manahara",
+      "email": "cst20003@std.uwu.ac.lk"
+    },
+    {
+      "name": "Upeksha Dhananji"
+    },
+    {
+      "name": "Pabasara Weliwaththa"
+    },
+    {
+      "name": "Kavindu Buddhika"
+    },
+    {
+      "name": "Pathumi Umasha"
+    },
+    {
+      "name": "Dinithi Sachinthani"
+    }
+  ],
+  "require": {
+    "bramus/router": "~1.6",
+    "vlucas/phpdotenv": "^5.5",
+    "phpmailer/phpmailer": "^6.8"
+  }
+}
