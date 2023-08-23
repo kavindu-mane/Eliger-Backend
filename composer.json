@@ -1,7 +1,7 @@
 {
   "name": "kavindu/eliger-backend",
   "description": "Backend of Eliger project.",
-  "license": "MIT",
+  "license": "Apache-2.0 license",
   "autoload": {
     "psr-4": {
       "EligerBackend\\": "/App"
