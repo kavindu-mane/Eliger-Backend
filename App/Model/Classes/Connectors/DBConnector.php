@@ -1,6 +1,6 @@
 <?php
 
-namespace EligerBackend\model\classes;
+namespace EligerBackend\Model\Classes\Connectors;
 
 use PDO;
 use PDOException;

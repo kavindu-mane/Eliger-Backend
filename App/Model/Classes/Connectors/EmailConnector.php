@@ -1,6 +1,6 @@
 <?php
 
-namespace EligerBackend\model\classes;
+namespace EligerBackend\model\classes\Connectors;
 
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
