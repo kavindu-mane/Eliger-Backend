@@ -17,7 +17,9 @@
  */
 
 use EligerBackend\Model\Classes\Connectors\DBConnector;
+use EligerBackend\Model\Classes\Users\Customer;
 use EligerBackend\Model\Classes\Users\User;
+use EligerBackend\Model\Classes\Users\VehicleOwner;
 
 if (isset($_POST["account-type"])) {
     // check any value is empty
@@ -45,7 +47,7 @@ if (isset($_POST["account-type"])) {
     }
 
     // password length check
-    if (strlen($data_array["password"]) < 8 || strlen($data_array["password"]) > 16) {
+    if (strlen($data_array["password"]) < 8 || strlen($data_array["password"]) > 32) {
         echo 8;
         exit();
     }
@@ -56,15 +58,15 @@ if (isset($_POST["account-type"])) {
         exit();
     }
 
-    if(!User::isNewUser($data_array["email"] , DBConnector::getConnection())){
+    if (!User::isNewUser($data_array["email"], DBConnector::getConnection())) {
         echo 10;
         exit();
     }
 
     if ($_POST["account-type"] === "customer") {
-        $user = new User($data_array["email"] , $data_array["password"] , "customer");
-        if($user->register()) echo 200;
-    } elseif ($_POST["account-type"] === "vehicle-owner") {
+        $customer = new Customer($data_array["email"], $data_array["password"], "customer", $data_array["phone"], $data_array["fname"], $data_array["lname"]);
+        if ($customer->register(DBConnector::getConnection())) echo 200;
+    } elseif ($_POST["account-type"] === "vehicle_owner") {
         // check address field
         if (empty(strip_tags(trim($_POST["address"])))) {
             echo 11;
@@ -72,7 +74,8 @@ if (isset($_POST["account-type"])) {
         }
         // add address to array
         $data_array["address"] = strip_tags(trim($_POST["address"]));
-        echo 200;
+        $owner = new VehicleOwner($data_array["email"], $data_array["password"], "vehicle_owner", $data_array["phone"], $data_array["fname"], $data_array["lname"] , $data_array["address"]);
+        if ($owner->register(DBConnector::getConnection())) echo 200;
     } else {
         echo 500;
     }

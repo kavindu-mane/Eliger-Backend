@@ -2,7 +2,6 @@
 
 namespace EligerBackend\Model\Classes\Users;
 
-use EligerBackend\Model\Classes\Connectors\DBConnector;
 use PDO;
 use PDOException;
 
@@ -12,7 +11,6 @@ class User
     private $password;
     private $type;
     private $accStatus = "unverified";
-    private static $connection;
 
 
     public function __construct()
@@ -28,7 +26,6 @@ class User
     // constructor for login
     public function _construct2($email, $password)
     {
-        self::$connection = DBConnector::getConnection();
         $this->email = $email;
         $this->password = $password;
     }
@@ -36,14 +33,13 @@ class User
     // constructor for register
     public function _construct3($email, $password, $type)
     {
-        self::$connection = DBConnector::getConnection();
         $this->email = $email;
         $this->password = $password;
         $this->type = $type;
     }
 
     // check given email already exist or not
-    public static function isNewUser($email , $connection)
+    public static function isNewUser($email, $connection)
     {
         $query = "select * from user where Email = ?";
         try {
@@ -62,14 +58,14 @@ class User
     }
 
     // register function of user
-    public function register()
+    public function register($connection)
     {
         $query = "insert into user (Email , Password , Account_Status, Account_Type ) values(?,?,?,?)";
         try {
 
-            $pstmt = self::$connection->prepare($query);
+            $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $this->email);
-            $pstmt->bindValue(2, password_hash($this->password , PASSWORD_BCRYPT));
+            $pstmt->bindValue(2, password_hash($this->password, PASSWORD_BCRYPT));
             $pstmt->bindValue(3, $this->accStatus);
             $pstmt->bindValue(4, $this->type);
             $pstmt->execute();
@@ -96,6 +92,14 @@ class User
     }
 
     public function verify($vericationId)
+    {
+    }
+
+    public function disableUser()
+    {
+    }
+
+    public function reportUser()
     {
     }
 
