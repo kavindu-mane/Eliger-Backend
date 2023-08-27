@@ -30,13 +30,23 @@ class Customer extends User
                 $pstmt->bindValue(1, $this->firstName);
                 $pstmt->bindValue(2, $this->lastName);
                 $pstmt->bindValue(3, $this->phone);
-                $pstmt->bindValue(4, $this-> getEmail());
+                $pstmt->bindValue(4, $this->getEmail());
                 $pstmt->execute();
+
+                $code = preg_replace('/[^a-zA-Z0-9]/m', '', password_hash($this->getEmail(), PASSWORD_BCRYPT));
+                $verification_query = "insert into  verification (Verification_Code , Email , Type , RemoveTime) values(? , ? , ? , date_add(now(),interval 1 day))";
+                $verification_pstmt = $connection->prepare($verification_query);
+                $verification_pstmt->bindValue(1, $code);
+                $verification_pstmt->bindValue(2, $this->getEmail());
+                $verification_pstmt->bindValue(3, "register");
+                $verification_pstmt->execute();
+
                 // send verification email
-                $email_template = __DIR__ . '/Email_Templates/mail_template.html';
+                $email_template = __DIR__ . '/Email_Templates/registration.html';
                 $message = file_get_contents($email_template);
-                $message = str_replace('%username%', "username", $message);
-                $message = str_replace('%password%', "password", $message);
+                $message = str_replace('%user_name%', "{$this->firstName} {$this->lastName}", $message);
+                $message = str_replace('%user_email%', $this->getEmail(), $message);
+                $message = str_replace('%code%', $code, $message);
                 $email_connection = EmailConnector::getEmailConnection();
 
                 $email_connection->msgHTML($message);
