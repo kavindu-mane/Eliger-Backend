@@ -1,7 +1,6 @@
 <?php
 
 namespace EligerBackend\Model\Classes\Users;
-
 use PDO;
 use PDOException;
 
@@ -69,13 +68,6 @@ class User
             $pstmt->bindValue(3, $this->accStatus);
             $pstmt->bindValue(4, $this->type);
             $pstmt->execute();
-
-            //          send verification email
-            // $email_connection->addAddress($this->email, $this->name);
-            // $email_connection->Subject = "Verify your Elezione account";
-            // $email_connection->Body = "Hi " . $this->name . " ,\n\nPlease verify your Elezione account using this link.\n\nhttp://localhost:8080/verification?verify=" . $this->verificationCode;
-
-            // $email_connection->send();
 
             return true;
         } catch (PDOException $ex) {

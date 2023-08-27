@@ -2,6 +2,7 @@
 
 namespace EligerBackend\model\classes\Users;
 
+use EligerBackend\Model\Classes\Connectors\EmailConnector;
 use EligerBackend\Model\Classes\Users\User;
 use PDOException;
 
@@ -34,6 +35,19 @@ class VehicleOwner extends User
                 $pstmt->bindValue(4, $this->phone);
                 $pstmt->bindValue(5, $this->getEmail());
                 $pstmt->execute();
+
+                // send verification email
+                $email_template = __DIR__ . '/Email_Templates/mail_template.html';
+                $message = file_get_contents($email_template);
+                $message = str_replace('%username%', "username", $message);
+                $message = str_replace('%password%', "password", $message);
+                $email_connection = EmailConnector::getEmailConnection();
+
+                $email_connection->msgHTML($message);
+                $email_connection->addAddress($this->getEmail(), "{$this->firstName} {$this->lastName}");
+                $email_connection->Subject = "Verify your Eliger account";
+                $email_connection->send();
+
                 return true;
             } catch (PDOException $ex) {
                 die("Registration Error : " . $ex->getMessage());
