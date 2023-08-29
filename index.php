@@ -23,4 +23,11 @@ $app->get("/", function () {
 $app->post("/register", function () {
     Controller::post_router("register_process");
 });
+$app->post("/resend", function () {
+    Controller::post_router("resend_process");
+});
+$app->post("/verify", function () {
+    Controller::post_router("verification_process");
+});
+
 $app->run();
