@@ -1,9 +1,10 @@
 <?php
-// start session
-session_start();
 
 use EligerBackend\Model\Classes\Connectors\DBConnector;
 use EligerBackend\Model\Classes\Users\User;
+
+// start session
+session_start();
 
 if (isset($_POST["email"], $_POST["password"])) {
     if (empty(strip_tags(trim($_POST["email"])))) {
@@ -18,7 +19,9 @@ if (isset($_POST["email"], $_POST["password"])) {
 
     $email = strip_tags(trim($_POST["email"]));
     $password = strip_tags(trim($_POST["password"]));
+    $remember = isset($_POST['remember']) ? true : false;
 
     $user = new User($email, $password);
-    echo $user->login(DBConnector::getConnection());
+    echo $user->login(DBConnector::getConnection() , $remember);
+    exit();
 }

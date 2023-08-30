@@ -78,7 +78,9 @@ if (isset($_POST["account-type"])) {
         if ($owner->register(DBConnector::getConnection())) echo 200;
     } else {
         echo 500;
+        exit();
     }
 } else {
     echo 500;
+    exit();
 }

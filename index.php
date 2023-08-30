@@ -31,5 +31,11 @@ $app->post("/verify", function () {
 $app->post("/login", function () {
     Controller::post_router("login_process");
 });
+$app->post("/session", function () {
+    Controller::post_router("session_login_process");
+});
+$app->post("/logout", function () {
+    Controller::post_router("logout_process");
+});
 
 $app->run();

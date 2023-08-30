@@ -59,7 +59,8 @@ class User
         }
     }
 
-    public function login($connection)
+    // login function
+    public function login($connection, $remember)
     {
         $check_query = "select * from user where Email = ?";
         $pstmt = $connection->prepare($check_query);
@@ -67,11 +68,71 @@ class User
         $pstmt->execute();
         $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
 
-        if(password_verify($this->password , $result[0]["Password"])){
+        if ($pstmt->rowCount() === 1 && password_verify($this->password, $result[0]["Password"])) {
+            $this->sessionHandling($connection, $remember);
             return 200;
-        }else{
+        } else {
             return 13;
         }
+    }
+
+    // session handling
+    public function sessionHandling($connection, $remember, $isNewLogin = true, $currentToken = '')
+    {
+        // create session
+        $_SESSION['user'] = password_hash($this->email, PASSWORD_BCRYPT);
+        // check and add functionality of remember me option
+        if ($remember) {
+            // if token already created , regenarate token
+            $token = '';
+            while (true) {
+                $token = bin2hex(random_bytes(32));
+                $check_query = "select * from session where Session_Token = ?";
+                $pstmt = $connection->prepare($check_query);
+                $pstmt->bindValue(1, $token);
+                $pstmt->execute();
+                if ($pstmt->rowCount() < 1) break;
+            }
+
+            // for new logins
+            if ($isNewLogin) {
+                $query = "insert into session (Session_Token , Email , Expire) values (? , ? , date_add(now(),interval 30 day))";
+                $pstmt = $connection->prepare($query);
+                $pstmt->bindValue(1, $token);
+                $pstmt->bindValue(2, $this->email);
+                $pstmt->execute();
+            } else {
+                // for already logged users
+                $query = "update session set Session_Token = ? , Expire = date_add(now(),interval 30 day) where Session_Token = ?";
+                $pstmt = $connection->prepare($query);
+                $pstmt->bindValue(1, $token);
+                $pstmt->bindValue(2, $currentToken);
+                $pstmt->execute();
+            }
+
+            // set cookie for 30 days
+            setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/');
+        }
+    }
+
+    // login with session token
+    public function loginWithToken($connection)
+    {
+        $token = $_COOKIE['remember_token'];
+
+        $query = "select * from session where Session_Token = ?";
+        $pstmt = $connection->prepare($query);
+        $pstmt->bindValue(1, $token);
+        $pstmt->execute();
+
+        if ($pstmt->rowCount() === 1) {
+            $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
+            $this->email = $result[0]["Email"];
+            // session handling
+            $this->sessionHandling($connection, true, false, $token);
+            return 200;
+        }
+        return 14;
     }
 
     // register function of user
@@ -93,14 +154,19 @@ class User
         }
     }
 
+    // logout function
     public function logout()
     {
+        session_unset();
+        session_destroy();
+        setcookie('remember_token', '', time() - 3600, '/');
     }
 
     public function update()
     {
     }
 
+    // account verification function
     public function verify($vericationCode, $connection)
     {
         $delete_query = "delete from verification where Verification_Code = ?";
@@ -127,18 +193,23 @@ class User
     // send verification email and save code in database
     public function sendVerificationEmail($connection, $name, $verificationType, $subject, $template)
     {
-        $query = "insert into  verification (Verification_Code , Email , Type , RemoveTime) values(? , ? , ? , date_add(now(),interval 1 day))";
-        $pstmt = $connection->prepare($query);
-        $rows = 0;
-        while ($rows < 1) {
+        $code = '';
+        while (true) {
             $randomString = md5(uniqid(rand(), true));
             $code = substr($randomString, 0, 20);
+            $check_query = "select * from verification where Verification_Code = ?";
+            $pstmt = $connection->prepare($check_query);
             $pstmt->bindValue(1, $code);
-            $pstmt->bindValue(2, $this->email);
-            $pstmt->bindValue(3, $verificationType);
             $pstmt->execute();
-            $rows = $pstmt->rowCount();
+            if ($pstmt->rowCount() < 1) true;
         }
+
+        $query = "insert into  verification (Verification_Code , Email , Type , RemoveTime) values(? , ? , ? , date_add(now(),interval 1 day))";
+        $pstmt = $connection->prepare($query);
+        $pstmt->bindValue(1, $code);
+        $pstmt->bindValue(2, $this->email);
+        $pstmt->bindValue(3, $verificationType);
+        $pstmt->execute();
 
         $email_template = __DIR__ . "/Email_Templates/{$template}.html";
         $message = file_get_contents($email_template);
