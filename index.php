@@ -16,7 +16,6 @@ $app = new Router();
 $app->setNamespace('\EligerBackend');
 $app->setBasePath('/');
 
-
 $app->get("/", function () {
     header("Location: http://localhost:3000/");
 });
@@ -28,6 +27,9 @@ $app->post("/resend", function () {
 });
 $app->post("/verify", function () {
     Controller::post_router("verification_process");
+});
+$app->post("/login", function () {
+    Controller::post_router("login_process");
 });
 
 $app->run();

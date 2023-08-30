@@ -59,8 +59,19 @@ class User
         }
     }
 
-    public function login()
+    public function login($connection)
     {
+        $check_query = "select * from user where Email = ?";
+        $pstmt = $connection->prepare($check_query);
+        $pstmt->bindValue(1, $this->email);
+        $pstmt->execute();
+        $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if(password_verify($this->password , $result[0]["Password"])){
+            return 200;
+        }else{
+            return 13;
+        }
     }
 
     // register function of user
