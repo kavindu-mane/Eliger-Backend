@@ -23,7 +23,7 @@ class Driver extends User
     }
 
     // update function
-    public function update()
+    public function update($connection, $type)
     {
         
     }

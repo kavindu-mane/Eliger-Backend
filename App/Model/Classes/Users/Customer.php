@@ -2,7 +2,6 @@
 
 namespace EligerBackend\model\classes\Users;
 
-use EligerBackend\Model\Classes\Connectors\EmailConnector;
 use EligerBackend\Model\Classes\Users\User;
 use PDOException;
 
@@ -43,7 +42,7 @@ class Customer extends User
     }
 
     // update function
-    public function update()
+    public function update($connection, $type)
     {
     }
 
