@@ -11,6 +11,8 @@ class VehicleOwner extends User
     private $firstName;
     private $lastName;
     private $address;
+    private $income;
+    private $charges;
 
     public function __construct($email, $password, $type, $phone, $firstName, $lastName, $address)
     {
@@ -44,7 +46,7 @@ class VehicleOwner extends User
     }
 
     // update function
-    public function update()
+    public function update($connection, $type)
     {
     }
 
@@ -67,5 +69,15 @@ class VehicleOwner extends User
     public function getAddress()
     {
         return $this->address;
+    }
+
+    public function getIncome()
+    {
+        return $this->income;
+    }
+
+    public function getCharges()
+    {
+        return $this->charges;
     }
 }
