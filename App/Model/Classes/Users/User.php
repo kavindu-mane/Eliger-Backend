@@ -162,7 +162,7 @@ class User
         setcookie('remember_token', '', time() - 3600, '/');
     }
 
-    public function update()
+    public function update($connection , $type)
     {
     }
 
@@ -180,14 +180,6 @@ class User
         } else {
             return 200;
         }
-    }
-
-    public function disableUser()
-    {
-    }
-
-    public function reportUser()
-    {
     }
 
     // send verification email and save code in database
@@ -224,6 +216,7 @@ class User
         $email_connection->send();
     }
 
+    // resend verification email again
     public function resendVerification($type, $connection, $email, $subject, $template)
     {
         // check code exist or not in database , if code exist only send email with verification code.
