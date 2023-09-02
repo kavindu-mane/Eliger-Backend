@@ -7,7 +7,7 @@ use EligerBackend\Model\Classes\Users\User;
 session_start();
 
 if (isset($_SESSION['user'])) {
-    echo 200;
+    echo json_encode(array("status" => 200, "role" => $_SESSION['user']['role']));
     exit();
 } elseif (isset($_COOKIE['remember_token'])) {
     $user = new User();

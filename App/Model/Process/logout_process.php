@@ -1,10 +1,10 @@
 <?php
 
 use EligerBackend\Model\Classes\Users\User;
+// start session
+session_start();
 
-if (isset($_POST["logout"])) {
-    $user = new User();
-    $user->logout();
-    echo 200;
-    exit();
-}
+$user = new User();
+$user->logout();
+echo 200;
+exit();

@@ -1,6 +1,12 @@
 <?php
 // for remove request blocking
-header("Access-Control-Allow-Origin:*");
+$http_origin = $_SERVER['HTTP_ORIGIN'];
+if ($http_origin == "http://localhost:8080" || $http_origin == "http://localhost:3000") {
+    header("Access-Control-Allow-Origin: $http_origin");
+} else {
+    header("Access-Control-Allow-Origin:*");
+}
+header('Access-Control-Allow-Credentials: true');
 header("Access-Control-Allow-Headers:Content-Type");
 
 use Bramus\Router\Router;

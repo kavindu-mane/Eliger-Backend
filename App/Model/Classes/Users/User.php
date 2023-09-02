@@ -69,8 +69,9 @@ class User
         $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($pstmt->rowCount() === 1 && password_verify($this->password, $result[0]["Password"])) {
+            $this->type = $result[0]["Account_Type"];
             $this->sessionHandling($connection, $remember);
-            return 200;
+            return json_encode(array("status" => 200, "role" => $_SESSION['user']['role']));
         } else {
             return 13;
         }
@@ -79,19 +80,20 @@ class User
     // session handling
     public function sessionHandling($connection, $remember, $isNewLogin = true, $currentToken = '')
     {
+        $token = bin2hex(random_bytes(32));
         // create session
-        $_SESSION['user'] = password_hash($this->email, PASSWORD_BCRYPT);
+        $_SESSION['user'] = array("id" => $token, "role" => $this->type);
+
         // check and add functionality of remember me option
         if ($remember) {
             // if token already created , regenarate token
-            $token = '';
             while (true) {
-                $token = bin2hex(random_bytes(32));
-                $check_query = "select * from session where Session_Token = ?";
+                $check_query = "select * from roles_with_session where Token = ?";
                 $pstmt = $connection->prepare($check_query);
                 $pstmt->bindValue(1, $token);
                 $pstmt->execute();
                 if ($pstmt->rowCount() < 1) break;
+                $token = bin2hex(random_bytes(32));
             }
 
             // for new logins
@@ -120,7 +122,7 @@ class User
     {
         $token = $_COOKIE['remember_token'];
 
-        $query = "select * from session where Session_Token = ?";
+        $query = "select * from roles_with_session where Token = ?";
         $pstmt = $connection->prepare($query);
         $pstmt->bindValue(1, $token);
         $pstmt->execute();
@@ -128,9 +130,10 @@ class User
         if ($pstmt->rowCount() === 1) {
             $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
             $this->email = $result[0]["Email"];
+            $this->type = $result[0]["role"];
             // session handling
             $this->sessionHandling($connection, true, false, $token);
-            return 200;
+            return json_encode(array("status" => 200, "role" => $_SESSION['user']['role']));
         }
         return 14;
     }
@@ -162,7 +165,7 @@ class User
         setcookie('remember_token', '', time() - 3600, '/');
     }
 
-    public function update($connection , $type)
+    public function update($connection, $type)
     {
     }
 
