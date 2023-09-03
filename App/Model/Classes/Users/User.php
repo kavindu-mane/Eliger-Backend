@@ -113,7 +113,8 @@ class User
             }
 
             // set cookie for 30 days
-            setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/');
+            // setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/' );
+            setcookie('remember_token', $token, ['expires' => time() + 30 * 24 * 3600, 'path' => '/', 'domain' => 'kavindu.me', 'samesite' => 'None', 'secure' => true, 'httponly' => true]);
         }
     }
 
