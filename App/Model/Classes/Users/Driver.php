@@ -3,6 +3,7 @@
 namespace EligerBackend\model\classes\Users;
 use EligerBackend\Model\Classes\Users\User;
 
+use PDOException;
 class Driver extends User
 {
     private $phone;
@@ -20,6 +21,24 @@ class Driver extends User
     // register function of external user
     public function register($connection)
     {
+        if (parent::register($connection)) {
+            try {
+                $query = "insert into driver (Driver_firstname ,Driver_lastname ,Driver_Tel , Email) values(? , ? , ? , ?)";
+                $pstmt = $connection->prepare($query);
+                $pstmt->bindValue(1, $this->firstName);
+                $pstmt->bindValue(2, $this->lastName);
+                $pstmt->bindValue(3, $this->phone);
+                $pstmt->bindValue(4, $this->getEmail());
+                $pstmt->execute();
+
+                parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+
+                return true;
+            } catch (PDOException $ex) {
+                die("Registration Error : " . $ex->getMessage());
+            }
+        }
+    
     }
 
     // update function
