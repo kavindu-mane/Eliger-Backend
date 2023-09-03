@@ -46,6 +46,9 @@ $app->post("/logout", function () {
 $app->post("/create_hns", function () {
     Controller::post_router("/admin/create_hns_process");
 });
+$app->post("/create_driver", function () {
+    Controller::post_router("/driver/create_driver_process");
+});
 $app->post("/load_accounts", function () {
     Controller::post_router("/admin/load_accdetails_process");
 });
