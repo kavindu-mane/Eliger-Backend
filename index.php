@@ -43,5 +43,11 @@ $app->post("/session", function () {
 $app->post("/logout", function () {
     Controller::post_router("logout_process");
 });
+$app->post("/create_hns", function () {
+    Controller::post_router("/admin/create_hns_process");
+});
+$app->post("/load_accounts", function () {
+    Controller::post_router("/admin/load_accdetails_process");
+});
 
 $app->run();
