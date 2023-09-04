@@ -49,5 +49,8 @@ $app->post("/create_hns", function () {
 $app->post("/load_accounts", function () {
     Controller::post_router("/admin/load_accdetails_process");
 });
+$app->post("/load_new_reg", function () {
+    Controller::post_router("/admin/load_new_reg_process");
+});
 
 $app->run();
