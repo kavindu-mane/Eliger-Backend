@@ -52,5 +52,14 @@ $app->post("/load_accounts", function () {
 $app->post("/load_new_reg", function () {
     Controller::post_router("/admin/load_new_reg_process");
 });
+$app->post("/load_vehicles", function () {
+    Controller::post_router("/hns/load_vehicles_process");
+});
+$app->post("/load_bookings", function () {
+    Controller::post_router("/hns/load_booking_process");
+});
+$app->post("/load_feedbacks", function () {
+    Controller::post_router("/hns/load_feedback_process");
+});
 
 $app->run();

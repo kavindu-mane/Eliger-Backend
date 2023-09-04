@@ -10,11 +10,26 @@ class HelpAndSupport extends User
 {
     private $name;
     private $email;
-    public function __construct($email, $password, $type, $name)
+
+    public function __construct()
+    {
+        $arguments = func_get_args();
+        $numberOfArguments = func_num_args();
+
+        if (method_exists($this, $function = '_construct' . $numberOfArguments)) {
+            call_user_func_array(array($this, $function), $arguments);
+        }
+    }
+
+    public function _construct4($email, $password, $type, $name)
     {
         parent::__construct($email, $password, $type);
         $this->name = $name;
         $this->email = $email;
+    }
+    public function _construct0()
+    {
+        
     }
     public function register($connection)
     {
@@ -26,7 +41,7 @@ class HelpAndSupport extends User
                 $pstmt->bindValue(2, $this->email);
                 $pstmt->execute();
 
-                parent::sendVerificationEmail($connection, "{$this-> name} {$this-> email}", "Help&Support", "Registration of Help & Support account", "registration");
+                parent::sendVerificationEmail($connection, "{$this->name} {$this->email}", "Help&Support", "Registration of Help & Support account", "registration");
 
                 return true;
             } catch (PDOException $ex) {
@@ -34,55 +49,49 @@ class HelpAndSupport extends User
             }
         }
     }
-    public function loadManageBooking($connection,$Origin_Place,$Destination_Place,$Type){
-        $query = "select * from booking where Booking_Id=?";
+    public function loadManageBooking($connection,$status)
+    {
+        $query = "select * from booking where Booking_Status=?";
 
-        
+
         try {
-                $pstmt = $connection->prepare($query);
-                $pstmt->bindValue(1, $Origin_Place);
-                $pstmt->bindValue(1, $Destination_Place);
-                $pstmt->bindValue(1, $Type);
-                
-                $pstmt->execute();
-                return $pstmt->fetchAll(PDO::FETCH_OBJ);
-            } catch (PDOException $ex) {
-                die(" Error : " . $ex->getMessage());
-            }
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $status);
 
+
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die(" Error : " . $ex->getMessage());
+        }
     }
-    public function loadManageVehicle($connection,$Vehicle_Type,$Vehicle_PlateNumber,$Passenger_amount){
+    public function loadManageVehicles($connection, $status)
+    {
         $query = "select * from vehicle where Vehicle_Id=?";
 
-        
-        try {
-                $pstmt = $connection->prepare($query);
-                $pstmt->bindValue(1, $Vehicle_Type);
-                $pstmt->bindValue(1, $Vehicle_PlateNumber);
-                $pstmt->bindValue(1, $Passenger_amount);
-                
-                $pstmt->execute();
-                return $pstmt->fetchAll(PDO::FETCH_OBJ);
-            } catch (PDOException $ex) {
-                die(" Error : " . $ex->getMessage());
-            }
 
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $status);
+
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die(" Error : " . $ex->getMessage());
+        }
     }
-    public function loadManageFeedback($connection,$Customer_Name,$Feedback_Description){
-        $query = "select * from feedback where Feedback=?";
 
-        
+
+    public function loadManageFeedback($connection)
+    {
+        $query = "select * from feedbck";
+
         try {
-                $pstmt = $connection->prepare($query);
-                $pstmt->bindValue(1, $Customer_Name);
-                $pstmt->bindValue(1, $Feedback_Description);
-                
-                
-                $pstmt->execute();
-                return $pstmt->fetchAll(PDO::FETCH_OBJ);
-            } catch (PDOException $ex) {
-                die(" Error : " . $ex->getMessage());
-            }
-
+            $pstmt = $connection->prepare($query);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die(" Error : " . $ex->getMessage());
+        }
     }
 }
