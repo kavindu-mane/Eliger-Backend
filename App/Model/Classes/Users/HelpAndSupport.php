@@ -67,7 +67,7 @@ class HelpAndSupport extends User
     }
     public function loadManageVehicles($connection, $status)
     {
-        $query = "select * from vehicle where Vehicle_Id=?";
+        $query = "select * from vehicle where Status=?";
 
 
         try {
