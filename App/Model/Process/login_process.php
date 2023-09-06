@@ -3,10 +3,6 @@
 use EligerBackend\Model\Classes\Connectors\DBConnector;
 use EligerBackend\Model\Classes\Users\User;
 
-// start session
-session_set_cookie_params(['SameSite' => 'None', 'Secure' => true]); 
-session_start();
-
 if (isset($_POST["email"], $_POST["password"])) {
     if (empty(strip_tags(trim($_POST["email"])))) {
         echo 3;

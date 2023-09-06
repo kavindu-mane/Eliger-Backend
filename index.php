@@ -3,11 +3,13 @@
 $http_origin = $_SERVER['HTTP_ORIGIN'];
 if ($http_origin == "http://localhost:8080" || $http_origin == "http://localhost:3000") {
     header("Access-Control-Allow-Origin: $http_origin");
-} else {
-    header("Access-Control-Allow-Origin:*");
 }
 header('Access-Control-Allow-Credentials: true');
 header("Access-Control-Allow-Headers:Content-Type");
+
+// start session
+session_set_cookie_params(['SameSite' => 'None', 'Secure' => true]);
+session_start();
 
 use Bramus\Router\Router;
 use Dotenv\Dotenv;
@@ -37,6 +39,9 @@ $app->post("/verify", function () {
 $app->post("/login", function () {
     Controller::post_router("login_process");
 });
+$app->post("/update", function () {
+    Controller::post_router("update_process");
+});
 $app->post("/session", function () {
     Controller::post_router("session_login_process");
 });
@@ -60,6 +65,12 @@ $app->post("/load_bookings", function () {
 });
 $app->post("/load_feedbacks", function () {
     Controller::post_router("/hns/load_feedback_process");
+});
+$app->post("/get_customer", function () {
+    Controller::post_router("/customer/get_customer_process");
+});
+$app->post("/update_customer", function () {
+    Controller::post_router("/customer/customer_update_process");
 });
 
 $app->run();

@@ -40,7 +40,6 @@ class Admin extends User
     }
 
     //Load new vehicle registrations
-
     public function loadNewVehicles($connection, $status)
     {
         $query = "select vehicle.*,vehicle_owner.Owner_firstname from vehicle inner join vehicle_owner on vehicle_owner.Owner_Id=vehicle.Owner_Id AND vehicle.Status = ? ";
@@ -56,7 +55,6 @@ class Admin extends User
     }
 
     //Load new driver registrations
-
     public function loadNewDriver($connection, $status)
     {
         $query = "select driver.*,vehicle_owner.Owner_firstname from driver inner join vehicle_owner on vehicle_owner.Owner_Id=driver.Owner_Id AND driver.Status = ? ";

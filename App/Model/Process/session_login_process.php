@@ -3,10 +3,6 @@
 use EligerBackend\Model\Classes\Connectors\DBConnector;
 use EligerBackend\Model\Classes\Users\User;
 
-// start session
-session_set_cookie_params(['SameSite' => 'None', 'Secure' => true]); 
-session_start();
-
 if (isset($_SESSION['user'])) {
     echo json_encode(array("status" => 200, "role" => $_SESSION['user']['role']));
     exit();

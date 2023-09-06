@@ -53,11 +53,9 @@ class HelpAndSupport extends User
     {
         $query = "select * from booking where Booking_Status=?";
 
-
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $status);
-
 
             $pstmt->execute();
             return $pstmt->fetchAll(PDO::FETCH_OBJ);
@@ -68,7 +66,6 @@ class HelpAndSupport extends User
     public function loadManageVehicles($connection, $status)
     {
         $query = "select * from vehicle where Status=?";
-
 
         try {
             $pstmt = $connection->prepare($query);

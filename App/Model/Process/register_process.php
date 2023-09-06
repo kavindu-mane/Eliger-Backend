@@ -57,7 +57,8 @@ if (isset($_POST["account-type"])) {
         echo 9;
         exit();
     }
-
+    
+    // check email already registered or not
     if (!User::isNewUser($data_array["email"], DBConnector::getConnection())) {
         echo 10;
         exit();
@@ -74,7 +75,7 @@ if (isset($_POST["account-type"])) {
         }
         // add address to array
         $data_array["address"] = strip_tags(trim($_POST["address"]));
-        $owner = new VehicleOwner($data_array["email"], $data_array["password"], "vehicle_owner", $data_array["phone"], $data_array["fname"], $data_array["lname"] , $data_array["address"]);
+        $owner = new VehicleOwner($data_array["email"], $data_array["password"], "vehicle_owner", $data_array["phone"], $data_array["fname"], $data_array["lname"], $data_array["address"]);
         if ($owner->register(DBConnector::getConnection())) echo 200;
     } else {
         echo 500;

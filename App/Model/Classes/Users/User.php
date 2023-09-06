@@ -3,6 +3,7 @@
 namespace EligerBackend\Model\Classes\Users;
 
 use EligerBackend\Model\Classes\Connectors\EmailConnector;
+use Exception;
 use PDO;
 use PDOException;
 
@@ -69,9 +70,13 @@ class User
         $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
 
         if ($pstmt->rowCount() === 1 && password_verify($this->password, $result[0]["Password"])) {
-            $this->type = $result[0]["Account_Type"];
-            $this->sessionHandling($connection, $remember);
-            return json_encode(array("status" => 200, "role" => $_SESSION['user']['role']));
+            if ($result[0]["Account_Status"] === "verified") {
+                $this->type = $result[0]["Account_Type"];
+                $this->sessionHandling($connection, $remember);
+                return json_encode(array("status" => 200, "role" => $_SESSION['user']['role']));
+            } elseif ($result[0]["Account_Status"] === "unverified") {
+                return 16;
+            }
         } else {
             return 13;
         }
@@ -80,20 +85,18 @@ class User
     // session handling
     public function sessionHandling($connection, $remember, $isNewLogin = true, $currentToken = '')
     {
-        $token = bin2hex(random_bytes(32));
         // create session
-        $_SESSION['user'] = array("id" => $token, "role" => $this->type);
-
+        $_SESSION['user'] = array("id" => $this->email, "role" => $this->type);
         // check and add functionality of remember me option
         if ($remember) {
             // if token already created , regenarate token
             while (true) {
+                $token = bin2hex(random_bytes(32));
                 $check_query = "select * from roles_with_session where Token = ?";
                 $pstmt = $connection->prepare($check_query);
                 $pstmt->bindValue(1, $token);
                 $pstmt->execute();
                 if ($pstmt->rowCount() < 1) break;
-                $token = bin2hex(random_bytes(32));
             }
 
             // for new logins
@@ -113,8 +116,8 @@ class User
             }
 
             // set cookie for 30 days
-            // setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/' );
-            setcookie('remember_token', $token, ['expires' => time() + 30 * 24 * 3600, 'path' => '/', 'domain' => 'kavindu.me', 'samesite' => 'None', 'secure' => true, 'httponly' => true]);
+            setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/');
+            // setcookie('remember_token', $token, ['expires' => time() + 30 * 24 * 3600, 'path' => '/', 'domain' => 'kavindu.me', 'samesite' => 'None', 'secure' => true, 'httponly' => true]);
         }
     }
 
@@ -166,8 +169,30 @@ class User
         setcookie('remember_token', '', time() - 3600, '/');
     }
 
-    public function update($connection, $type)
+    // update function
+    public function update($connection, $field, $data)
     {
+        $query = "update user set Email = ? , Account_Status = 'unverified' where Email = ?";
+        if ($field === "Password")
+            $query = "update user set Password = ? where Email = ?";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $data);
+            $pstmt->bindValue(2, $_SESSION["user"]["id"]);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                if ($field === "Email") {
+                    $this->resendVerification("register",$connection , $data ,"Verify your Eliger account", "registration");
+                    $this->logout();
+                }
+                return 200;
+            } else {
+                return 500;
+            }
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
     }
 
     // account verification function
