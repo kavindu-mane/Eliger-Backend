@@ -1,6 +1,6 @@
 <?php
 
-namespace EligerBackend\model\classes\Users;
+namespace EligerBackend\Model\Classes\Users;
 
 use PDO;
 use PDOException;

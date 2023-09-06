@@ -46,7 +46,7 @@ class VehicleOwner extends User
     }
 
     // update function
-    public function update($connection, $type)
+    public function updateOwner($connection, $type)
     {
     }
 

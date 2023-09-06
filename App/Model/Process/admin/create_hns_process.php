@@ -1,7 +1,7 @@
 <?php
 
 use EligerBackend\Model\Classes\Connectors\DBConnector;
-use EligerBackend\model\classes\Users\Admin;
+use EligerBackend\Model\Classes\Users\Admin;
 use EligerBackend\Model\Classes\Users\User;
 
 if (isset($_POST["name"], $_POST["email"], $_POST["initial_password"], $_POST["confirm_initial_password"])) {
@@ -35,6 +35,7 @@ if (isset($_POST["name"], $_POST["email"], $_POST["initial_password"], $_POST["c
         exit();
     }
 
+    // check email is available or not
     if (!User::isNewUser($data_array["email"], DBConnector::getConnection())) {
         echo 10;
         exit();
