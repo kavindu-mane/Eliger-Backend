@@ -48,6 +48,7 @@ $app->post("/session", function () {
 $app->post("/logout", function () {
     Controller::post_router("logout_process");
 });
+// admin
 $app->post("/create_hns", function () {
     Controller::post_router("/admin/create_hns_process");
 });
@@ -57,6 +58,7 @@ $app->post("/load_accounts", function () {
 $app->post("/load_new_reg", function () {
     Controller::post_router("/admin/load_new_reg_process");
 });
+// help and support
 $app->post("/load_vehicles", function () {
     Controller::post_router("/hns/load_vehicles_process");
 });
@@ -66,11 +68,19 @@ $app->post("/load_bookings", function () {
 $app->post("/load_feedbacks", function () {
     Controller::post_router("/hns/load_feedback_process");
 });
+// customer
 $app->post("/get_customer", function () {
     Controller::post_router("/customer/get_customer_process");
 });
 $app->post("/update_customer", function () {
     Controller::post_router("/customer/customer_update_process");
+});
+// owner
+$app->post("/get_owner", function () {
+    Controller::post_router("/owner/get_owner_process");
+});
+$app->post("/update_owner", function () {
+    Controller::post_router("/owner/owner_update_process");
 });
 
 $app->run();

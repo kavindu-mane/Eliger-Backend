@@ -3,6 +3,7 @@
 namespace EligerBackend\model\classes\Users;
 
 use EligerBackend\Model\Classes\Users\User;
+use PDO;
 use PDOException;
 
 class VehicleOwner extends User
@@ -14,13 +15,27 @@ class VehicleOwner extends User
     private $income;
     private $charges;
 
-    public function __construct($email, $password, $type, $phone, $firstName, $lastName, $address)
+    public function __construct()
+    {
+        $arguments = func_get_args();
+        $numberOfArguments = func_num_args();
+
+        if (method_exists($this, $function = '_construct' . $numberOfArguments)) {
+            call_user_func_array(array($this, $function), $arguments);
+        }
+    }
+
+    public function _construct7($email, $password, $type, $phone, $firstName, $lastName, $address)
     {
         parent::__construct($email, $password, $type);
         $this->phone = $phone;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
         $this->address =  $address;
+    }
+
+    public function _construct0()
+    {
     }
 
     // register function of external user
@@ -46,8 +61,41 @@ class VehicleOwner extends User
     }
 
     // update function
-    public function updateOwner($connection, $type)
+    public function updateOwner($connection, $email , $data)
     {
+        $query = "update vehicle_owner set Owner_firstname =? , Owner_lastname = ? , Owner_address = ? , Owner_Tel = ? where Email = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $data["fname"]);
+            $pstmt->bindValue(2, $data["lname"]);
+            $pstmt->bindValue(3, $data["address"]);
+            $pstmt->bindValue(4, $data["phone"]);
+            $pstmt->bindValue(5, $email);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return 200;
+            }
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
+    // load owner details
+    public function loadOwner($connection, $email)
+    {
+        $query = "select Owner_firstname, Owner_lastname, Owner_address, Charges, Income, Owner_Tel, Email from vehicle_owner where Email = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return json_encode($pstmt->fetch(PDO::FETCH_OBJ));
+            } else {
+                return 14;
+            }
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
     }
 
     // getters

@@ -183,9 +183,9 @@ class User
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
                 if ($field === "Email") {
-                    $this->resendVerification("register",$connection , $data ,"Verify your Eliger account", "registration");
-                    $this->logout();
+                    $this->resendVerification("register", $connection, $data, "Verify your Eliger account", "registration");
                 }
+                $this->logout();
                 return 200;
             } else {
                 return 500;
