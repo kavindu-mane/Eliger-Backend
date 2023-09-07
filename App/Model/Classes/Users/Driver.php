@@ -1,39 +1,75 @@
 <?php
 
 namespace EligerBackend\model\classes\Users;
+
 use EligerBackend\Model\Classes\Users\User;
 use PDO;
 use PDOException;
+
 class Driver extends User
 {
     private $phone;
     private $firstName;
     private $lastName;
+    private $incomePercentage;
+    private $licence;
+    private $address;
 
-    public function __construct($email, $password, $type, $phone, $firstName, $lastName)
+    public function __construct()
+    {
+        $arguments = func_get_args();
+        $numberOfArguments = func_num_args();
+
+        if (method_exists($this, $function = '_construct' . $numberOfArguments)) {
+            call_user_func_array(array($this, $function), $arguments);
+        }
+    }
+
+    public function _construct9($email, $password, $type, $phone, $firstName, $lastName, $incomePercentage, $licence, $address)
     {
         parent::__construct($email, $password, $type);
         $this->phone = $phone;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
+        $this->incomePercentage = $incomePercentage;
+        $this->licence = $licence;
+        $this->address = $address;
+    }
+
+    public function _construct0()
+    {
     }
 
     // register function of external user
     public function register($connection)
     {
-           if (parent::register($connection)) {
+        if (parent::register($connection)) {
             try {
-                $query = "insert into driver (Driver_firstname , Driver_lastname , Driver_Tel , Email) values(? , ? , ? , ?)";
+                $query = "select Owner_Id from vehicle_owner where Email = ?";
                 $pstmt = $connection->prepare($query);
-                $pstmt->bindValue(1, $this->firstName);
-                $pstmt->bindValue(2, $this->lastName);
-                $pstmt->bindValue(3, $this->phone);
-                $pstmt->bindValue(4, $this->getEmail());
+                $pstmt->bindValue(1, $_SESSION["user"]["id"]);
                 $pstmt->execute();
+                if ($pstmt->rowCount() === 1) {
+                    $owner =  $pstmt->fetch(PDO::FETCH_ASSOC)["Owner_Id"];
 
-                parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+                    $query = "insert into driver (Driver_firstname , Driver_lastname , Driver_Tel , Email , Licence_File , Driver_address , Income_Percentage , Owner_Id) values(? , ? , ? , ? , ? , ? , ? , ?)";
+                    $pstmt = $connection->prepare($query);
+                    $pstmt->bindValue(1, $this->firstName);
+                    $pstmt->bindValue(2, $this->lastName);
+                    $pstmt->bindValue(3, $this->phone);
+                    $pstmt->bindValue(4, $this->getEmail());
+                    $pstmt->bindValue(5, $this->licence);
+                    $pstmt->bindValue(6, $this->address);
+                    $pstmt->bindValue(7, $this->incomePercentage);
+                    $pstmt->bindValue(8, $owner);
+                    $pstmt->execute();
 
-                return true;
+                    parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+
+                    return true;
+                } else {
+                    return 14;
+                }
             } catch (PDOException $ex) {
                 die("Registration Error : " . $ex->getMessage());
             }
@@ -43,7 +79,6 @@ class Driver extends User
     // update function
     public function updateDriver($connection, $type)
     {
-        
     }
 
     // getters
@@ -60,5 +95,20 @@ class Driver extends User
     public function getPhone()
     {
         return $this->phone;
+    }
+
+    public function getAddress()
+    {
+        return $this->address;
+    }
+
+    public function getLicence()
+    {
+        return $this->licence;
+    }
+
+    public function getIncomePercentage()
+    {
+        return $this->incomePercentage;
     }
 }

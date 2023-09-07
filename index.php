@@ -82,5 +82,8 @@ $app->post("/get_owner", function () {
 $app->post("/update_owner", function () {
     Controller::post_router("/owner/owner_update_process");
 });
+$app->post("/create_driver", function () {
+    Controller::post_router("/owner/create_driver_process");
+});
 
 $app->run();
