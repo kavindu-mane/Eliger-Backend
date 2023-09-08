@@ -53,10 +53,16 @@ $app->post("/create_hns", function () {
     Controller::post_router("/admin/create_hns_process");
 });
 $app->post("/load_accounts", function () {
-    Controller::post_router("/admin/load_accdetails_process");
+    Controller::post_router("/admin/load_accounts_process");
 });
 $app->post("/load_new_reg", function () {
     Controller::post_router("/admin/load_new_reg_process");
+});
+$app->post("/driver_validate", function () {
+    Controller::post_router("/admin/driver_validate_process");
+});
+$app->post("/disable_user", function () {
+    Controller::post_router("/admin/disable_user_process");
 });
 // help and support
 $app->post("/load_vehicles", function () {

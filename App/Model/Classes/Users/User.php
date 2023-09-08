@@ -76,6 +76,8 @@ class User
                 return json_encode(array("status" => 200, "role" => $_SESSION['user']['role']));
             } elseif ($result[0]["Account_Status"] === "unverified") {
                 return 16;
+            } else {
+                return 13;
             }
         } else {
             return 13;

@@ -6,7 +6,7 @@ class Vahicle
 {
     private $vehicleType;
     private $plateNumber;
-    private $status = "pending";
+    private $status = "new";
     private $ownershipDoc;
     private $insurance;
     private $passengerAmount;

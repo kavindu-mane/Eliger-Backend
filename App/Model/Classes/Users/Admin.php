@@ -23,7 +23,7 @@ class Admin extends User
         $query = "select * from customer_details where Account_Status=?";
 
         if ($account_type === "driver") {
-            $query = "select * from driver_details where Account_Status=?";
+            $query = "select driver_details.* , vehicle_owner_details.Owner_firstname , vehicle_owner_details.Owner_lastname from driver_details inner join vehicle_owner_details on driver_details.Owner_Id = vehicle_owner_details.Owner_Id and driver_details.Account_Status=?";
         } elseif ($account_type === "hands") {
             $query = "select * from hands_details where Account_Status=?";
         } elseif ($account_type === "vehicle_owner") {
@@ -42,7 +42,7 @@ class Admin extends User
     //Load new vehicle registrations
     public function loadNewVehicles($connection, $status)
     {
-        $query = "select vehicle.*,vehicle_owner.Owner_firstname from vehicle inner join vehicle_owner on vehicle_owner.Owner_Id=vehicle.Owner_Id AND vehicle.Status = ? ";
+        $query = "select vehicle.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname from vehicle inner join vehicle_owner on vehicle_owner.Owner_Id=vehicle.Owner_Id AND vehicle.Status = ? ";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -57,7 +57,7 @@ class Admin extends User
     //Load new driver registrations
     public function loadNewDriver($connection, $status)
     {
-        $query = "select driver.*,vehicle_owner.Owner_firstname from driver inner join vehicle_owner on vehicle_owner.Owner_Id=driver.Owner_Id AND driver.Status = ? ";
+        $query = "select driver.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname from driver inner join vehicle_owner on vehicle_owner.Owner_Id=driver.Owner_Id AND driver.Status = ? ";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -70,12 +70,40 @@ class Admin extends User
     }
 
     // disable user
-    public function disableUser($connection)
+    public function disableUser($connection, $status, $email)
     {
+        $query = "update user set Account_Status = ? where Email = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $status);
+            $pstmt->bindValue(2, $email);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return 200;
+            } else {
+                return 500;
+            }
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
     }
 
     // Review Document function
-    public function reviewDocument($connection)
+    public function reviewDocument($connection, $status, $driverId)
     {
+        $query = "update driver set Status = ? where Driver_Id = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $status);
+            $pstmt->bindValue(2, $driverId);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return 200;
+            } else {
+                return 500;
+            }
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
     }
 }
