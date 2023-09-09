@@ -89,13 +89,16 @@ class Admin extends User
     }
 
     // Review Document function
-    public function reviewDocument($connection, $status, $driverId)
+    public function reviewDocument($connection,$type, $status, $Id)
     {
         $query = "update driver set Status = ? where Driver_Id = ?";
+        if($type === "vehicle"){
+            $query = "update vehicle set Status = ? where Vehicle_Id = ?";
+        }
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $status);
-            $pstmt->bindValue(2, $driverId);
+            $pstmt->bindValue(2, $Id);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
                 return 200;
