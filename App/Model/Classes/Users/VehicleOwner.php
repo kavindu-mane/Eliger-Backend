@@ -98,6 +98,37 @@ class VehicleOwner extends User
         }
     }
 
+    //Load vehicles
+    public function loadVehicles($connection , $email)
+    {
+        $query = "select vehicle.* from vehicle inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=vehicle.Owner_Id AND vehicle_owner_details.Email = ? ";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    //Load drivers
+    public function loadDriver($connection , $email , $status = false)
+    {
+        $query = "select driver_details.* from driver_details inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=driver_details.Owner_Id AND vehicle_owner_details.Email = ?".($status ? "and driver_details.Status = ?":"");
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            if($status) $pstmt->bindValue(2, "verified");
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
     // getters
     public function getFirstName()
     {

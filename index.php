@@ -91,5 +91,11 @@ $app->post("/update_owner", function () {
 $app->post("/create_driver", function () {
     Controller::post_router("/owner/create_driver_process");
 });
+$app->post("/add_vehicle", function () {
+    Controller::post_router("/owner/add_vehicle_process");
+});
+$app->post("/load_owner_property", function () {
+    Controller::post_router("/owner/load_owner_property_process");
+});
 
 $app->run();

@@ -15,4 +15,7 @@ if (isset($_POST["vehicle_status"])) {
     $admin = new Admin();
     echo json_encode($admin-> loadNewDriver(DBConnector::getConnection() , $_POST["driver_status"]));
     exit();
+}else{
+    echo 500;
+    exit();
 }
