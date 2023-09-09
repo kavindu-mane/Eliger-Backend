@@ -101,7 +101,8 @@ class VehicleOwner extends User
     //Load vehicles
     public function loadVehicles($connection , $email)
     {
-        $query = "select vehicle.* from vehicle inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=vehicle.Owner_Id AND vehicle_owner_details.Email = ? ";
+        $query = "select vehicle.* , driver_details.Driver_firstname , driver_details.Driver_lastname from vehicle inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=vehicle.Owner_Id and vehicle_owner_details.Email = ? 
+        left join driver_details ON driver_details.Driver_Id = vehicle.Driver_Id";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -116,7 +117,7 @@ class VehicleOwner extends User
     //Load drivers
     public function loadDriver($connection , $email , $status = false)
     {
-        $query = "select driver_details.* from driver_details inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=driver_details.Owner_Id AND vehicle_owner_details.Email = ?".($status ? "and driver_details.Status = ?":"");
+        $query = "select driver_details.* from driver_details inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=driver_details.Owner_Id and vehicle_owner_details.Email = ?".($status ? "and driver_details.Status = ?":"");
 
         try {
             $pstmt = $connection->prepare($query);
