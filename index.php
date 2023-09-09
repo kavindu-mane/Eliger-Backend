@@ -58,8 +58,8 @@ $app->post("/load_accounts", function () {
 $app->post("/load_new_reg", function () {
     Controller::post_router("/admin/load_new_reg_process");
 });
-$app->post("/driver_validate", function () {
-    Controller::post_router("/admin/driver_validate_process");
+$app->post("/document_validate", function () {
+    Controller::post_router("/admin/document_validate_process");
 });
 $app->post("/disable_user", function () {
     Controller::post_router("/admin/disable_user_process");
