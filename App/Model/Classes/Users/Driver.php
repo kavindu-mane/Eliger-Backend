@@ -14,6 +14,7 @@ class Driver extends User
     private $incomePercentage;
     private $licence;
     private $address;
+    private $owner;
 
     public function __construct()
     {
@@ -25,7 +26,7 @@ class Driver extends User
         }
     }
 
-    public function _construct9($email, $password, $type, $phone, $firstName, $lastName, $incomePercentage, $licence, $address)
+    public function _construct10($email, $password, $type, $phone, $firstName, $lastName, $incomePercentage, $licence, $address, $owner)
     {
         parent::__construct($email, $password, $type);
         $this->phone = $phone;
@@ -34,6 +35,7 @@ class Driver extends User
         $this->incomePercentage = $incomePercentage;
         $this->licence = $licence;
         $this->address = $address;
+        $this->owner = $owner;
     }
 
     public function _construct0()
@@ -45,31 +47,20 @@ class Driver extends User
     {
         if (parent::register($connection)) {
             try {
-                $query = "select Owner_Id from vehicle_owner where Email = ?";
+                $query = "insert into driver (Driver_firstname , Driver_lastname , Driver_Tel , Email , Licence_File , Driver_address , Income_Percentage , Owner_Id) values(? , ? , ? , ? , ? , ? , ? , ?)";
                 $pstmt = $connection->prepare($query);
-                $pstmt->bindValue(1, $_SESSION["user"]["id"]);
+                $pstmt->bindValue(1, $this->firstName);
+                $pstmt->bindValue(2, $this->lastName);
+                $pstmt->bindValue(3, $this->phone);
+                $pstmt->bindValue(4, $this->getEmail());
+                $pstmt->bindValue(5, $this->licence);
+                $pstmt->bindValue(6, $this->address);
+                $pstmt->bindValue(7, $this->incomePercentage);
+                $pstmt->bindValue(8, $this->owner);
                 $pstmt->execute();
-                if ($pstmt->rowCount() === 1) {
-                    $owner =  $pstmt->fetch(PDO::FETCH_ASSOC)["Owner_Id"];
 
-                    $query = "insert into driver (Driver_firstname , Driver_lastname , Driver_Tel , Email , Licence_File , Driver_address , Income_Percentage , Owner_Id) values(? , ? , ? , ? , ? , ? , ? , ?)";
-                    $pstmt = $connection->prepare($query);
-                    $pstmt->bindValue(1, $this->firstName);
-                    $pstmt->bindValue(2, $this->lastName);
-                    $pstmt->bindValue(3, $this->phone);
-                    $pstmt->bindValue(4, $this->getEmail());
-                    $pstmt->bindValue(5, $this->licence);
-                    $pstmt->bindValue(6, $this->address);
-                    $pstmt->bindValue(7, $this->incomePercentage);
-                    $pstmt->bindValue(8, $owner);
-                    $pstmt->execute();
-
-                    parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
-
-                    return true;
-                } else {
-                    return 14;
-                }
+                parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+                return $pstmt->rowCount() === 1;
             } catch (PDOException $ex) {
                 die("Registration Error : " . $ex->getMessage());
             }

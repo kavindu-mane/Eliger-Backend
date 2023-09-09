@@ -83,7 +83,7 @@ class VehicleOwner extends User
     // load owner details
     public function loadOwner($connection, $email)
     {
-        $query = "select Owner_firstname, Owner_lastname, Owner_address, Charges, Income, Owner_Tel, Email from vehicle_owner where Email = ?";
+        $query = "select * from vehicle_owner_details where Email = ?";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $email);

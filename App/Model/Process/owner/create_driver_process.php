@@ -4,19 +4,26 @@ use EligerBackend\Model\Classes\Connectors\DBConnector;
 use EligerBackend\Model\Classes\Users\Driver;
 use EligerBackend\Model\Classes\Users\User;
 
-if (isset($_SESSION["user"])) {
+if (isset($_SESSION["user"],)) {
     // check any value is empty
     $variable_array = array("fname", "lname", "phone", "email", "password", "confPassword", "percentage", "address");
     $data_array = array();
     foreach ($variable_array as $variable) {
-        if (empty(strip_tags(trim($_POST[$variable])))) {
+        if (isset($_POST[$variable])) {
+            if (empty(strip_tags(trim($_POST[$variable])))) {
+                if ($variable === "percentage") echo 19;
+                elseif ($variable === "address") echo 11;
+                else echo array_search($variable, $variable_array);
+                exit();
+            }
+            // assign value to array
+            $data_array[$variable] = strip_tags(trim($_POST[$variable]));
+        } else {
             if ($variable === "percentage") echo 19;
             elseif ($variable === "address") echo 11;
             else echo array_search($variable, $variable_array);
             exit();
         }
-        // assign value to array
-        $data_array[$variable] = strip_tags(trim($_POST[$variable]));
     }
 
     // validate phone number
@@ -86,7 +93,8 @@ if (isset($_SESSION["user"])) {
                         $data_array["lname"],
                         $data_array["percentage"],
                         "licence_doc/" . $new_img_name,
-                        $data_array["address"]
+                        $data_array["address"],
+                        $_POST["owner"]
                     );
                     if ($driver->register(DBConnector::getConnection())) {
                         echo 200;

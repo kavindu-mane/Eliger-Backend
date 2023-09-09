@@ -2,7 +2,10 @@
 
 namespace EligerBackend\Model\Classes\Others;
 
-class Vahicle
+use PDO;
+use PDOException;
+
+class Vehicle
 {
     private $vehicleType;
     private $plateNumber;
@@ -25,7 +28,7 @@ class Vahicle
         }
     }
 
-    public function _construct6(
+    public function _construct9(
         $vehicleType,
         $plateNumber,
         $ownershipDoc,
@@ -51,9 +54,42 @@ class Vahicle
     {
     }
 
-    // add new vehicle
-    public function addVehicle($connection)
+    // check given vehicle already exist or not
+    public static function isNewVehicle($Vehicle_PlateNumber, $connection)
     {
+        $query = "select * from vehicle where Vehicle_PlateNumber = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $Vehicle_PlateNumber);
+            $pstmt->execute();
+            $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
+            return empty($result);
+        } catch (PDOException $ex) {
+            die("Error occurred : " . $ex->getMessage());
+        }
+    }
+
+    // add new vehicle
+    public function addVehicle($connection, $owner)
+    {
+        $query = "insert into vehicle(Owner_Id, Driver_Id, Vehicle_type, Booking_Type, Price, Vehicle_PlateNumber, Ownership_Doc, Insurance, Passenger_amount, Current_Location) values(?,?,?,?,?,?,?,?,?,?)";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $owner);
+            $pstmt->bindValue(2, $this->driver);
+            $pstmt->bindValue(3, $this->vehicleType);
+            $pstmt->bindValue(4, $this->rentType);
+            $pstmt->bindValue(5, $this->price);
+            $pstmt->bindValue(6, strtoupper($this->plateNumber));
+            $pstmt->bindValue(7, $this->ownershipDoc);
+            $pstmt->bindValue(8, $this->insurance);
+            $pstmt->bindValue(9, $this->passengerAmount);
+            $pstmt->bindValue(10, $this->rentOutLocation);
+            $pstmt->execute();
+            return $pstmt->rowCount() === 1;
+        } catch (PDOException $ex) {
+            die("Error occurred : " . $ex->getMessage());
+        }
     }
 
     // getters
