@@ -2,6 +2,7 @@
 
 namespace EligerBackend\Model\Classes\Others;
 
+use Exception;
 use PDO;
 use PDOException;
 
@@ -89,6 +90,31 @@ class Vehicle
             return $pstmt->rowCount() === 1;
         } catch (PDOException $ex) {
             die("Error occurred : " . $ex->getMessage());
+        }
+    }
+
+    // edit vehicle function
+    public function editVehicle($connection, $data)
+    {
+        $query = "update vehicle set Driver_Id = ? , Price = ? where Vehicle_Id = ?";
+        if (count($data) === 4) $query = "update vehicle set Driver_Id = ? , Price = ? , Current_Location = ? where Vehicle_Id = ?";
+        elseif (count($data) === 5) $query = "update vehicle set Driver_Id = ? , Price = ? , Current_Location = ? , Availability = ? where Vehicle_Id = ?";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $data["assign-driver"]);
+            $pstmt->bindValue(2, $data["price"]);
+            if (count($data) > 3) $pstmt->bindValue(3, $data["nearest-city"]);
+            if (count($data) === 5) $pstmt->bindValue(4, $data["availability"]);
+            $pstmt->bindValue(count($data), $data["vehicle-id"]);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return 200;
+            } else {
+                return 500;
+            }
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
         }
     }
 
