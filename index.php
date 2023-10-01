@@ -100,5 +100,12 @@ $app->post("/update_vehicle", function () {
 $app->post("/load_owner_property", function () {
     Controller::post_router("/owner/load_owner_property_process");
 });
+// driver
+$app->post("/get_driver", function () {
+    Controller::post_router("/driver/get_driver_process");
+});
+$app->post("/update_driver", function () {
+    Controller::post_router("/driver/driver_update_process");
+});
 
 $app->run();

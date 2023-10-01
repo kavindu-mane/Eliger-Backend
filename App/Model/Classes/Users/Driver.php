@@ -68,8 +68,38 @@ class Driver extends User
     }
 
     // update function
-    public function updateDriver($connection, $type)
+    public function updateDriver($connection, $email , $data)
     {
+        $query = "update driver set Driver_firstname =? , Driver_lastname = ? , Driver_address = ? , Driver_Tel = ? where Email = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $data["fname"]);
+            $pstmt->bindValue(2, $data["lname"]);
+            $pstmt->bindValue(3, $data["address"]);
+            $pstmt->bindValue(4, $data["phone"]);
+            $pstmt->bindValue(5, $email);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return 200;
+            }
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
+    //Load vehicles
+    public function loadDriver($connection, $email)
+    {
+        $query = "SELECT driver_details.Driver_Id , driver_details.Status , driver_details.Driver_firstname , driver_details.Driver_lastname , driver_details.Driver_Tel , driver_details.Driver_address , driver_details.Email , vehicle.Vehicle_type , vehicle.Availability , vehicle.Vehicle_PlateNumber FROM driver_details 
+                LEFT JOIN vehicle ON driver_details.Driver_Id = vehicle.Driver_Id  WHERE driver_details.Email = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            $pstmt->execute();
+            return json_encode($pstmt->fetch(PDO::FETCH_OBJ));
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
     }
 
     // getters
