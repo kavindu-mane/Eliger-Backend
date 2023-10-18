@@ -73,7 +73,7 @@ class Vehicle
     // add new vehicle
     public function addVehicle($connection, $owner)
     {
-        $query = "insert into vehicle(Owner_Id, Driver_Id, Vehicle_type, Booking_Type, Price, Vehicle_PlateNumber, Ownership_Doc, Insurance, Passenger_amount, Current_Location) values(?,?,?,?,?,?,?,?,?,?)";
+        $query = "insert into vehicle(Owner_Id, Driver_Id, Vehicle_type, Booking_Type, Price, Vehicle_PlateNumber, Ownership_Doc, Insurance, Passenger_amount, Rent_Location) values(?,?,?,?,?,?,?,?,?,?)";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $owner);
@@ -97,8 +97,8 @@ class Vehicle
     public function editVehicle($connection, $data)
     {
         $query = "update vehicle set Driver_Id = ? , Price = ? where Vehicle_Id = ?";
-        if (count($data) === 4) $query = "update vehicle set Driver_Id = ? , Price = ? , Current_Location = ? where Vehicle_Id = ?";
-        elseif (count($data) === 5) $query = "update vehicle set Driver_Id = ? , Price = ? , Current_Location = ? , Availability = ? where Vehicle_Id = ?";
+        if (count($data) === 4) $query = "update vehicle set Driver_Id = ? , Price = ? , Rent_Location = ? where Vehicle_Id = ?";
+        elseif (count($data) === 5) $query = "update vehicle set Driver_Id = ? , Price = ? , Rent_Location = ? , Availability = ? where Vehicle_Id = ?";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -115,6 +115,33 @@ class Vehicle
             }
         } catch (Exception $ex) {
             die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // near vehicle
+    public function nearVehicles($connection)
+    {
+        $lat = 5.9666628;
+        $long = 80.6833306;
+
+        try {
+            $query = "select Price , Vehicle_PlateNumber , Vehicle_type , (3959 * acos(cos(radians(?)) * cos(radians(Current_Lat)) * 
+    cos(radians(Current_Long) - radians(?)) * sin(radians(?)) * sin(radians(Current_Lat)))) as distance from vehicle order by distance limit 2";
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $lat);
+            $pstmt->bindValue(2, $long);
+            $pstmt->bindValue(3, $lat);
+            $pstmt->execute();
+            $rs = $pstmt->fetchAll(PDO::FETCH_ASSOC);
+            if ($pstmt->rowCount() > 0) {
+                foreach ($rs as $res) {
+                    print_r($res);
+                }
+            } else {
+                echo "No data found.";
+            }
+        } catch (Exception $ex) {
+            die("Error : " . $ex->getMessage());
         }
     }
 

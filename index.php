@@ -48,6 +48,10 @@ $app->post("/session", function () {
 $app->post("/logout", function () {
     Controller::post_router("logout_process");
 });
+$app->post("/get_nearest", function () {
+    Controller::post_router("get_nearest_process");
+});
+
 // admin
 $app->post("/create_hns", function () {
     Controller::post_router("/admin/create_hns_process");
@@ -108,4 +112,7 @@ $app->post("/update_driver", function () {
     Controller::post_router("/driver/driver_update_process");
 });
 
+$app->get("/temp", function () {
+    Controller::post_router("temp");
+});
 $app->run();
