@@ -58,19 +58,19 @@ if (isset($_SESSION["user"])) {
     }
     // check nearest city is empty or not
     if ($data_array["rent-type"] === "rent-out") {
-        if (isset($_POST["nearest-city"])) {
-            if (empty(strip_tags(trim($_POST["nearest-city"])))) {
+        if (isset($_POST["district"])) {
+            if (empty(strip_tags(trim($_POST["district"])))) {
                 echo  36;
                 exit();
             }
             // assign value to array
-            $data_array["nearest-city"] = strip_tags(trim($_POST["nearest-city"]));
+            $data_array["location"] = array(strip_tags(trim($_POST["district"])), $_POST["lat"], $_POST["long"]);
         } else {
             echo  36;
             exit();
         }
     } else {
-        $data_array["nearest-city"] = null;
+        $data_array["location"] = array(null, null, null);
     }
 
     // check documents
@@ -121,7 +121,7 @@ if (isset($_SESSION["user"])) {
         $data_array["ownership"],
         $data_array["insurance"],
         $data_array["amount"],
-        $data_array["nearest-city"],
+        $data_array["location"],
         $data_array["price"],
         $data_array["rent-type"],
         $data_array["assign-driver"],

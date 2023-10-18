@@ -14,7 +14,7 @@ class Vehicle
     private $ownershipDoc;
     private $insurance;
     private $passengerAmount;
-    private $rentOutLocation;
+    private $location;
     private $price;
     private $rentType;
     private $driver;
@@ -35,7 +35,7 @@ class Vehicle
         $ownershipDoc,
         $insurance,
         $passengerAmount,
-        $rentOutLocation,
+        $location,
         $price,
         $rentType,
         $driver
@@ -45,7 +45,7 @@ class Vehicle
         $this->ownershipDoc = $ownershipDoc;
         $this->insurance = $insurance;
         $this->passengerAmount = $passengerAmount;
-        $this->rentOutLocation = $rentOutLocation;
+        $this->location = $location;
         $this->price = $price;
         $this->rentType = $rentType;
         $this->driver = $driver;
@@ -73,7 +73,7 @@ class Vehicle
     // add new vehicle
     public function addVehicle($connection, $owner)
     {
-        $query = "insert into vehicle(Owner_Id, Driver_Id, Vehicle_type, Booking_Type, Price, Vehicle_PlateNumber, Ownership_Doc, Insurance, Passenger_amount, Rent_Location) values(?,?,?,?,?,?,?,?,?,?)";
+        $query = "insert into vehicle(Owner_Id, Driver_Id, Vehicle_type, Booking_Type, Price, Vehicle_PlateNumber, Ownership_Doc, Insurance, Passenger_amount, District , Current_Lat , Current_Long) values(?,?,?,?,?,?,?,?,?,?,?,?)";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $owner);
@@ -85,7 +85,9 @@ class Vehicle
             $pstmt->bindValue(7, $this->ownershipDoc);
             $pstmt->bindValue(8, $this->insurance);
             $pstmt->bindValue(9, $this->passengerAmount);
-            $pstmt->bindValue(10, $this->rentOutLocation);
+            $pstmt->bindValue(10, $this->location[0]);
+            $pstmt->bindValue(11, $this->location[1]);
+            $pstmt->bindValue(12, $this->location[2]);
             $pstmt->execute();
             return $pstmt->rowCount() === 1;
         } catch (PDOException $ex) {
@@ -97,8 +99,8 @@ class Vehicle
     public function editVehicle($connection, $data)
     {
         $query = "update vehicle set Driver_Id = ? , Price = ? where Vehicle_Id = ?";
-        if (count($data) === 4) $query = "update vehicle set Driver_Id = ? , Price = ? , Rent_Location = ? where Vehicle_Id = ?";
-        elseif (count($data) === 5) $query = "update vehicle set Driver_Id = ? , Price = ? , Rent_Location = ? , Availability = ? where Vehicle_Id = ?";
+        if (count($data) === 4) $query = "update vehicle set Driver_Id = ? , Price = ? , District = ? where Vehicle_Id = ?";
+        elseif (count($data) === 5) $query = "update vehicle set Driver_Id = ? , Price = ? , District = ? , Availability = ? where Vehicle_Id = ?";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -119,26 +121,23 @@ class Vehicle
     }
 
     // near vehicle
-    public function nearVehicles($connection)
+    public function nearVehicles($connection, $lat, $long, $type)
     {
-        $lat = 5.9666628;
-        $long = 80.6833306;
-
         try {
-            $query = "select Price , Vehicle_PlateNumber , Vehicle_type , (3959 * acos(cos(radians(?)) * cos(radians(Current_Lat)) * 
-    cos(radians(Current_Long) - radians(?)) * sin(radians(?)) * sin(radians(Current_Lat)))) as distance from vehicle order by distance limit 2";
+            $query = "select Price , Vehicle_PlateNumber , Vehicle_type , Current_Lat , Current_Long, round((ACOS((SIN(RADIANS(Current_Lat)) * SIN(RADIANS(?))) + (COS(RADIANS(Current_Lat)) 
+    * COS(RADIANS(?))) * (COS(RADIANS(?) - RADIANS(Current_Long)))) * 6371) , 2) as distance from vehicle where Status = 'verified' and Booking_Type = 'book-now' 
+    and Availability = 'available' and Vehicle_type = ? having distance order by distance limit 10";
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $lat);
-            $pstmt->bindValue(2, $long);
-            $pstmt->bindValue(3, $lat);
+            $pstmt->bindValue(2, $lat);
+            $pstmt->bindValue(3, $long);
+            $pstmt->bindValue(4, strtolower($type));
             $pstmt->execute();
-            $rs = $pstmt->fetchAll(PDO::FETCH_ASSOC);
+            $rs = $pstmt->fetchAll(PDO::FETCH_OBJ);
             if ($pstmt->rowCount() > 0) {
-                foreach ($rs as $res) {
-                    print_r($res);
-                }
+                return json_encode($rs);
             } else {
-                echo "No data found.";
+                return 45;
             }
         } catch (Exception $ex) {
             die("Error : " . $ex->getMessage());
@@ -166,9 +165,9 @@ class Vehicle
     {
         return $this->passengerAmount;
     }
-    public function getRentOutLocation()
+    public function getLocation()
     {
-        return $this->rentOutLocation;
+        return $this->location;
     }
     public function getStatus()
     {
