@@ -51,6 +51,9 @@ $app->post("/logout", function () {
 $app->post("/get_nearest", function () {
     Controller::post_router("get_nearest_process");
 });
+$app->post("/get_vehicle_by_district", function () {
+    Controller::post_router("get_vehicle_by_district_process");
+});
 
 // admin
 $app->post("/create_hns", function () {
@@ -110,9 +113,5 @@ $app->post("/get_driver", function () {
 });
 $app->post("/update_driver", function () {
     Controller::post_router("/driver/driver_update_process");
-});
-
-$app->get("/temp", function () {
-    Controller::post_router("temp");
 });
 $app->run();

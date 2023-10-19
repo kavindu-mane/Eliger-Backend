@@ -144,6 +144,41 @@ class Vehicle
         }
     }
 
+    // vehicle available for district
+    public function vehicleByDistrict(
+        $connection,
+        $district,
+        $type,
+        $start_date,
+        $end_date,
+        $driver
+    ) {
+        try {
+            $query = "SELECT * from (SELECT vehicle.Owner_Id , vehicle.Vehicle_Id , vehicle.Price , vehicle.Vehicle_PlateNumber , vehicle.Passenger_amount , vehicle.Current_Lat , 
+                vehicle.Vehicle_type , vehicle.Current_Long , booking.Booking_Id , booking.Journey_Starting_Date , booking.Journey_Ending_Date
+                FROM vehicle
+                LEFT JOIN booking
+                ON vehicle.Vehicle_Id = booking.Vehicle_Id 
+                WHERE vehicle.District = ? and vehicle.Booking_Type = 'rent-out' and vehicle.Status = 'verified' and vehicle.Vehicle_type = ? and vehicle.Driver_Id Is $driver
+                ORDER BY vehicle.Vehicle_Id) as vehicle_booking
+                WHERE Booking_Id IS Null or not (? <= Journey_Ending_Date and  ? >= Journey_Starting_Date)";
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $district);
+            $pstmt->bindValue(2, strtolower($type));
+            $pstmt->bindValue(3, $start_date);
+            $pstmt->bindValue(4,$end_date);
+            $pstmt->execute();
+            $rs = $pstmt->fetchAll(PDO::FETCH_OBJ);
+            if ($pstmt->rowCount() > 0) {
+                return json_encode($rs);
+            } else {
+                return 45;
+            }
+        } catch (Exception $ex) {
+            die("Error : " . $ex->getMessage());
+        }
+    }
+
     // getters
     public function getVehicleType()
     {
