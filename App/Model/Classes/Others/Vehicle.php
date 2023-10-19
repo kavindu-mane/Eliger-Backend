@@ -124,7 +124,7 @@ class Vehicle
     public function nearVehicles($connection, $lat, $long, $type)
     {
         try {
-            $query = "select Price , Vehicle_PlateNumber , Vehicle_type , Current_Lat , Current_Long, round((ACOS((SIN(RADIANS(Current_Lat)) * SIN(RADIANS(?))) + (COS(RADIANS(Current_Lat)) 
+            $query = "select Price , Vehicle_PlateNumber , Vehicle_type , Current_Lat , Current_Long, Feedback_count , Feedback_score, round((ACOS((SIN(RADIANS(Current_Lat)) * SIN(RADIANS(?))) + (COS(RADIANS(Current_Lat)) 
     * COS(RADIANS(?))) * (COS(RADIANS(?) - RADIANS(Current_Long)))) * 6371) , 2) as distance from vehicle where Status = 'verified' and Booking_Type = 'book-now' 
     and Availability = 'available' and Vehicle_type = ? having distance order by distance limit 10";
             $pstmt = $connection->prepare($query);
@@ -155,7 +155,7 @@ class Vehicle
     ) {
         try {
             $query = "SELECT * from (SELECT vehicle.Owner_Id , vehicle.Vehicle_Id , vehicle.Price , vehicle.Vehicle_PlateNumber , vehicle.Passenger_amount , vehicle.Current_Lat , 
-                vehicle.Vehicle_type , vehicle.Current_Long , booking.Booking_Id , booking.Journey_Starting_Date , booking.Journey_Ending_Date
+                vehicle.Vehicle_type , vehicle.Current_Long , vehicle.Feedback_count , vehicle.Feedback_score , booking.Booking_Id , booking.Journey_Starting_Date , booking.Journey_Ending_Date
                 FROM vehicle
                 LEFT JOIN booking
                 ON vehicle.Vehicle_Id = booking.Vehicle_Id 
@@ -166,7 +166,7 @@ class Vehicle
             $pstmt->bindValue(1, $district);
             $pstmt->bindValue(2, strtolower($type));
             $pstmt->bindValue(3, $start_date);
-            $pstmt->bindValue(4,$end_date);
+            $pstmt->bindValue(4, $end_date);
             $pstmt->execute();
             $rs = $pstmt->fetchAll(PDO::FETCH_OBJ);
             if ($pstmt->rowCount() > 0) {
