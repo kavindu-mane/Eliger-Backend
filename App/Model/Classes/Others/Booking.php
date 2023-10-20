@@ -22,7 +22,7 @@ class Booking
 
     public function addBooking($connection)
     {
-        $query = "INSERT INTO booking(Customer_Id, Owner_Id, Driver_Id, Vehicle_Id, Origin_Place, Destination_Place, Journey_Starting_Date, Journey_Ending_Date, Booking_Time, Booking_Type) values(?,?,?,?,?,?,?,?,?,?)";
+        $query = "INSERT INTO booking(Customer_Id, Owner_Id, Driver_Id, Vehicle_Id, Origin_Place, Destination_Place, Journey_Starting_Date, Journey_Ending_Date, Booking_Time, Booking_Type) values(?,?,?,?,?,?,?,?,NOW(),?)";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $this->customerId);
@@ -33,8 +33,7 @@ class Booking
             $pstmt->bindValue(6, $this->destination);
             $pstmt->bindValue(7, $this->startDate);
             $pstmt->bindValue(8, $this->endDate);
-            $pstmt->bindValue(9, "now()");
-            $pstmt->bindValue(10, $this->bookingType);
+            $pstmt->bindValue(9, $this->bookingType);
             $pstmt->execute();
             return $pstmt->rowCount() === 1;
         } catch (PDOException $ex) {

@@ -124,10 +124,10 @@ class Vehicle
     public function nearVehicles($connection, $lat, $long, $type)
     {
         try {
-            $query = "SELECT Price , Vehicle_PlateNumber , Vehicle_type , Current_Lat , Current_Long, Feedback_count , Feedback_score, 
+            $query = "SELECT Price , Vehicle_PlateNumber , Vehicle_type , Current_Lat , Current_Long, Feedback_count , Feedback_score, Owner_Id , Driver_Id , Vehicle_Id , 
             ROUND((ACOS((SIN(RADIANS(Current_Lat)) * SIN(RADIANS(?))) + (COS(RADIANS(Current_Lat)) * COS(RADIANS(?))) * (COS(RADIANS(?) - RADIANS(Current_Long)))) * 6371) , 2) as distance 
             FROM vehicle WHERE Status = 'verified' AND Booking_Type = 'book-now' 
-            AND Availability = 'available' AND Vehicle_type = ? HAVING distance ORDER BY distance LIMIT 10";
+            AND Availability = 'available' AND Vehicle_type = ? HAVING distance ORDER BY distance ASC LIMIT 10";
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $lat);
             $pstmt->bindValue(2, $lat);
@@ -155,16 +155,21 @@ class Vehicle
         $driver
     ) {
         try {
-            $query = "SELECT * ,  ? as Journey_Starting_Date , ? as Journey_Ending_Date 
-                FROM (SELECT vehicle.Owner_Id , vehicle.Vehicle_Id , vehicle.Price , vehicle.Vehicle_PlateNumber , vehicle.Passenger_amount , vehicle.Current_Lat , 
-                vehicle.Vehicle_type , vehicle.Current_Long , vehicle.Feedback_count , vehicle.Feedback_score , booking.Booking_Id , booking.Journey_Starting_Date , booking.Journey_Ending_Date
+            $query = "SELECT * ,? as Journey_Starting_Date , ? as Journey_Ending_Date , Null as Booking_Id from (
+                SELECT * , COUNT(Vehicle_Id) as sorted_booking_count 
+                FROM (SELECT COUNT(booking.Booking_Id) OVER (PARTITION BY booking.Vehicle_Id) as booking_count, vehicle.Owner_Id , vehicle.Vehicle_Id , 
+                vehicle.Price , vehicle.Vehicle_PlateNumber , vehicle.Passenger_amount , vehicle.Current_Lat , vehicle.Driver_Id,
+                vehicle.Vehicle_type , vehicle.Current_Long , vehicle.Feedback_count , vehicle.Feedback_score , booking.Booking_Id , 
+                booking.Journey_Starting_Date , booking.Journey_Ending_Date
                 FROM vehicle
                 LEFT JOIN booking
-                ON vehicle.Vehicle_Id = booking.Vehicle_Id 
-                WHERE vehicle.District = ? and vehicle.Booking_Type = 'rent-out' and vehicle.Status = 'verified' and vehicle.Vehicle_type = ? and vehicle.Driver_Id Is $driver
+                ON vehicle.Vehicle_Id = booking.Vehicle_Id and (booking.Booking_Status = 'approved' or booking.Booking_Status = 'pending')
+                WHERE vehicle.District = ? and vehicle.Booking_Type = 'rent-out'  and vehicle.Status = 'verified' 
+                and vehicle.Vehicle_type = ? and vehicle.Driver_Id Is $driver
                 ORDER BY vehicle.Vehicle_Id) as vehicle_booking
                 WHERE Booking_Id IS Null or not (? <= Journey_Ending_Date and  ? >= Journey_Starting_Date)
-                GROUP BY Vehicle_Id";
+                GROUP BY Vehicle_Id) as sorted_vehicles
+                WHERE sorted_booking_count = booking_count or booking_count = 0";
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $start_date);
             $pstmt->bindValue(2, $end_date);

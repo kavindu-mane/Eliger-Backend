@@ -88,6 +88,9 @@ $app->post("/get_customer", function () {
 $app->post("/update_customer", function () {
     Controller::post_router("/customer/customer_update_process");
 });
+$app->post("/add_booking", function () {
+    Controller::post_router("/customer/add_booking_process");
+});
 // owner
 $app->post("/get_owner", function () {
     Controller::post_router("/owner/get_owner_process");
