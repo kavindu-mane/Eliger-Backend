@@ -124,9 +124,10 @@ class Vehicle
     public function nearVehicles($connection, $lat, $long, $type)
     {
         try {
-            $query = "select Price , Vehicle_PlateNumber , Vehicle_type , Current_Lat , Current_Long, Feedback_count , Feedback_score, round((ACOS((SIN(RADIANS(Current_Lat)) * SIN(RADIANS(?))) + (COS(RADIANS(Current_Lat)) 
-    * COS(RADIANS(?))) * (COS(RADIANS(?) - RADIANS(Current_Long)))) * 6371) , 2) as distance from vehicle where Status = 'verified' and Booking_Type = 'book-now' 
-    and Availability = 'available' and Vehicle_type = ? having distance order by distance limit 10";
+            $query = "SELECT Price , Vehicle_PlateNumber , Vehicle_type , Current_Lat , Current_Long, Feedback_count , Feedback_score, 
+            ROUND((ACOS((SIN(RADIANS(Current_Lat)) * SIN(RADIANS(?))) + (COS(RADIANS(Current_Lat)) * COS(RADIANS(?))) * (COS(RADIANS(?) - RADIANS(Current_Long)))) * 6371) , 2) as distance 
+            FROM vehicle WHERE Status = 'verified' AND Booking_Type = 'book-now' 
+            AND Availability = 'available' AND Vehicle_type = ? HAVING distance ORDER BY distance LIMIT 10";
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $lat);
             $pstmt->bindValue(2, $lat);
@@ -154,19 +155,23 @@ class Vehicle
         $driver
     ) {
         try {
-            $query = "SELECT * from (SELECT vehicle.Owner_Id , vehicle.Vehicle_Id , vehicle.Price , vehicle.Vehicle_PlateNumber , vehicle.Passenger_amount , vehicle.Current_Lat , 
+            $query = "SELECT * ,  ? as Journey_Starting_Date , ? as Journey_Ending_Date 
+                FROM (SELECT vehicle.Owner_Id , vehicle.Vehicle_Id , vehicle.Price , vehicle.Vehicle_PlateNumber , vehicle.Passenger_amount , vehicle.Current_Lat , 
                 vehicle.Vehicle_type , vehicle.Current_Long , vehicle.Feedback_count , vehicle.Feedback_score , booking.Booking_Id , booking.Journey_Starting_Date , booking.Journey_Ending_Date
                 FROM vehicle
                 LEFT JOIN booking
                 ON vehicle.Vehicle_Id = booking.Vehicle_Id 
                 WHERE vehicle.District = ? and vehicle.Booking_Type = 'rent-out' and vehicle.Status = 'verified' and vehicle.Vehicle_type = ? and vehicle.Driver_Id Is $driver
                 ORDER BY vehicle.Vehicle_Id) as vehicle_booking
-                WHERE Booking_Id IS Null or not (? <= Journey_Ending_Date and  ? >= Journey_Starting_Date)";
+                WHERE Booking_Id IS Null or not (? <= Journey_Ending_Date and  ? >= Journey_Starting_Date)
+                GROUP BY Vehicle_Id";
             $pstmt = $connection->prepare($query);
-            $pstmt->bindValue(1, $district);
-            $pstmt->bindValue(2, strtolower($type));
-            $pstmt->bindValue(3, $start_date);
-            $pstmt->bindValue(4, $end_date);
+            $pstmt->bindValue(1, $start_date);
+            $pstmt->bindValue(2, $end_date);
+            $pstmt->bindValue(3, $district);
+            $pstmt->bindValue(4, strtolower($type));
+            $pstmt->bindValue(5, $start_date);
+            $pstmt->bindValue(6, $end_date);
             $pstmt->execute();
             $rs = $pstmt->fetchAll(PDO::FETCH_OBJ);
             if ($pstmt->rowCount() > 0) {
