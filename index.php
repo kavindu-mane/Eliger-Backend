@@ -91,6 +91,10 @@ $app->post("/update_customer", function () {
 $app->post("/add_booking", function () {
     Controller::post_router("/customer/add_booking_process");
 });
+$app->post("/get_customer_booking", function () {
+    Controller::post_router("/customer/get_customer_booking_process");
+});
+
 // owner
 $app->post("/get_owner", function () {
     Controller::post_router("/owner/get_owner_process");

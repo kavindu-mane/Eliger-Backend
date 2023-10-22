@@ -9,7 +9,7 @@ if (isset($_SESSION["user"])) {
             if (
                 filter_var($_POST["owner"], FILTER_VALIDATE_INT) &&
                 (filter_var($_POST["driver"], FILTER_VALIDATE_INT) ||
-                    $_POST["driver"] === null) &&
+                    $_POST["driver"] === "null") &&
                 filter_var($_POST["vehicle"], FILTER_VALIDATE_INT)
             ) {
                 if (isset($_POST["type"])) {
@@ -24,7 +24,7 @@ if (isset($_SESSION["user"])) {
                             $booking = new Booking();
                             $booking->setCustomerId($rs["Customer_Id"]);
                             $booking->setOwnerId($_POST["owner"]);
-                            $booking->setDriverId($_POST["driver"]);
+                            if ($_POST["driver"] !== "null") $booking->setDriverId($_POST["driver"]);
                             $booking->setVehicleId($_POST["vehicle"]);
 
                             if ($_POST["type"] === "rent-out") {

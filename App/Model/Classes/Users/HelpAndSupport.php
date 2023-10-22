@@ -81,7 +81,7 @@ class HelpAndSupport extends User
 
     public function loadManageFeedback($connection)
     {
-        $query = "select * from feedbck";
+        $query = "select * from feedback";
 
         try {
             $pstmt = $connection->prepare($query);

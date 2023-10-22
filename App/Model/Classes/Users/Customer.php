@@ -69,7 +69,7 @@ class Customer extends User
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
                 return 200;
-            } 
+            }
         } catch (PDOException $ex) {
             die("Loading Error : " . $ex->getMessage());
         }
@@ -88,6 +88,35 @@ class Customer extends User
             } else {
                 return 14;
             }
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
+    // load bookings
+    public function loadBooking($connection, $id)
+    {
+        $query = "SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , vehicle.Passenger_amount , vehicle.Current_Lat , vehicle.Current_Long ,
+                    vehicle_owner_details.Owner_firstname , vehicle_owner_details.Owner_lastname , vehicle_owner_details.Owner_Tel,
+                    driver_details.Driver_firstname , driver_details.Driver_lastname , driver_details.Driver_Tel,
+                    payment.Payment_type , payment.Amount , payment.Datetime , feedback.Feedback_Id FROM booking 
+                    LEFT JOIN payment 
+                    ON  booking.Customer_Id = payment.Customer_Id 
+                    LEFT JOIN vehicle 
+                    ON vehicle.Vehicle_Id = booking.vehicle_Id
+                    LEFT JOIN vehicle_owner_details 
+                    ON vehicle_owner_details.Owner_Id = booking.Owner_Id
+                    LEFT JOIN driver_details 
+                    ON driver_details.Driver_Id = booking.Driver_Id
+                    LEFT JOIN feedback 
+                    ON feedback.Booking_Id = booking.Booking_Id
+                    WHERE booking.Customer_Id = ?
+                    ORDER BY FIELD(booking.Booking_Status , 'approved' , 'pending','rejected','finished')";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $id);
+            $pstmt->execute();
+            return json_encode($pstmt->fetchAll(PDO::FETCH_OBJ));
         } catch (PDOException $ex) {
             die("Loading Error : " . $ex->getMessage());
         }
