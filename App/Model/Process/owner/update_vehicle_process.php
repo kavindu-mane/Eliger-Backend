@@ -47,13 +47,13 @@ if (isset($_SESSION["user"])) {
     }
 
     // check nearest city is assigned or not
-    if (isset($_POST["nearest-city"])) {
-        if (empty(strip_tags(trim($_POST["nearest-city"])))) {
+    if (isset($_POST["district"])) {
+        if (empty(strip_tags(trim($_POST["district"])))) {
             echo  36;
             exit();
         }
         // assign value to array
-        $data_array["nearest-city"] = strip_tags(trim($_POST["nearest-city"]));
+        $data_array["district"] = strip_tags(trim($_POST["district"]));
     }
 
     // check availabilty
@@ -66,9 +66,32 @@ if (isset($_SESSION["user"])) {
         $data_array["availability"] = strip_tags(trim($_POST["availability"]));
     }
 
+    // check availabilty
+    if (isset($_POST["lat"])) {
+        if (empty(strip_tags(trim($_POST["lat"])))) {
+            echo  500;
+            exit();
+        }
+        // assign value to array
+        $data_array["lat"] = strip_tags(trim($_POST["lat"]));
+    }
+
+    // check availabilty
+    if (isset($_POST["long"])) {
+        if (empty(strip_tags(trim($_POST["long"])))) {
+            echo  500;
+            exit();
+        }
+        // assign value to array
+        $data_array["long"] = strip_tags(trim($_POST["long"]));
+    }
+
     $vehicle = new Vehicle();
     echo $vehicle->editVehicle(DBConnector::getConnection(), $data_array);
+    exit();
 } else {
     echo 14;
     exit();
 }
+echo 500;
+exit();

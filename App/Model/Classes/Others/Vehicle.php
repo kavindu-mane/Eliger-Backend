@@ -99,15 +99,17 @@ class Vehicle
     public function editVehicle($connection, $data)
     {
         $query = "update vehicle set Driver_Id = ? , Price = ? where Vehicle_Id = ?";
-        if (count($data) === 4) $query = "update vehicle set Driver_Id = ? , Price = ? , District = ? where Vehicle_Id = ?";
-        elseif (count($data) === 5) $query = "update vehicle set Driver_Id = ? , Price = ? , District = ? , Availability = ? where Vehicle_Id = ?";
+        if (count($data) === 6) $query = "update vehicle set Driver_Id = ? , Price = ? , District = ? , Current_Lat = ? , Current_Long = ? where Vehicle_Id = ?";
+        elseif (count($data) === 7) $query = "update vehicle set Driver_Id = ? , Price = ? , District = ? , Availability = ?, Current_Lat = ? , Current_Long = ? where Vehicle_Id = ?";
 
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $data["assign-driver"]);
             $pstmt->bindValue(2, $data["price"]);
-            if (count($data) > 3) $pstmt->bindValue(3, $data["nearest-city"]);
-            if (count($data) === 5) $pstmt->bindValue(4, $data["availability"]);
+            if (count($data) > 3) $pstmt->bindValue(3, $data["district"]);
+            if (count($data) === 7) $pstmt->bindValue(4, $data["availability"]);
+            $pstmt->bindValue(count($data) - 2, $data["lat"]);
+            $pstmt->bindValue(count($data) - 1, $data["long"]);
             $pstmt->bindValue(count($data), $data["vehicle-id"]);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {

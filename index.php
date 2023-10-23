@@ -120,6 +120,9 @@ $app->post("/update_vehicle", function () {
 $app->post("/load_owner_property", function () {
     Controller::post_router("/owner/load_owner_property_process");
 });
+$app->post("/get_rentout_booking", function () {
+    Controller::post_router("/owner/get_rentout_booking_process");
+});
 // driver
 $app->post("/get_driver", function () {
     Controller::post_router("/driver/get_driver_process");

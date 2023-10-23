@@ -61,7 +61,7 @@ class VehicleOwner extends User
     }
 
     // update function
-    public function updateOwner($connection, $email , $data)
+    public function updateOwner($connection, $email, $data)
     {
         $query = "update vehicle_owner set Owner_firstname =? , Owner_lastname = ? , Owner_address = ? , Owner_Tel = ? where Email = ?";
         try {
@@ -99,10 +99,16 @@ class VehicleOwner extends User
     }
 
     //Load vehicles
-    public function loadVehicles($connection , $email)
+    public function loadVehicles($connection, $email, $offset)
     {
-        $query = "select vehicle.* , driver_details.Driver_firstname , driver_details.Driver_lastname from vehicle inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=vehicle.Owner_Id and vehicle_owner_details.Email = ? 
-        left join driver_details ON driver_details.Driver_Id = vehicle.Driver_Id";
+        $query = "WITH PaginatedResults AS (
+                SELECT vehicle.* , driver_details.Driver_firstname , driver_details.Driver_lastname 
+                from vehicle inner join vehicle_owner_details 
+                on vehicle_owner_details.Owner_Id=vehicle.Owner_Id and vehicle_owner_details.Email = ? 
+                left join driver_details ON driver_details.Driver_Id = vehicle.Driver_Id)
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                LIMIT 15 OFFSET $offset";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -115,18 +121,55 @@ class VehicleOwner extends User
     }
 
     //Load drivers
-    public function loadDriver($connection , $email , $status = false)
+    public function loadDriver($connection, $email, $status = false, $offset)
     {
-        $query = "select driver_details.* from driver_details inner join vehicle_owner_details on vehicle_owner_details.Owner_Id=driver_details.Owner_Id and vehicle_owner_details.Email = ?".($status ? "and driver_details.Status = ?":"");
+        $query = "WITH PaginatedResults AS (SELECT driver_details.* from driver_details 
+                inner join vehicle_owner_details 
+                on vehicle_owner_details.Owner_Id=driver_details.Owner_Id 
+                and vehicle_owner_details.Email = ?" . ($status ? "and driver_details.Status = ?)" : ")") .
+            "SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                LIMIT 15 OFFSET $offset";
 
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $email);
-            if($status) $pstmt->bindValue(2, "verified");
+            if ($status) $pstmt->bindValue(2, "verified");
             $pstmt->execute();
             return $pstmt->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $ex) {
             die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load bookings
+    public function loadBooking($connection, $id, $offset)
+    {
+        $query = "WITH PaginatedResults AS (
+                    SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , 
+                    customer_details.Customer_firstname , customer_details.Customer_lastname , customer_details.Customer_Tel,
+                    driver_details.Driver_firstname , driver_details.Driver_lastname ,
+                    payment.Payment_type , payment.Amount , payment.Datetime FROM booking 
+                    LEFT JOIN payment 
+                    ON  booking.Customer_Id = payment.Customer_Id 
+                    LEFT JOIN vehicle 
+                    ON vehicle.Vehicle_Id = booking.vehicle_Id
+                    LEFT JOIN customer_details 
+                    ON customer_details.Customer_Id = booking.Customer_Id
+                    LEFT JOIN driver_details 
+                    ON driver_details.Driver_Id = booking.Driver_Id
+                    WHERE booking.Owner_Id = ? and booking.Booking_Type = 'rent-out')
+                    SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                    FROM PaginatedResults
+                    ORDER BY FIELD(Booking_Status , 'pending','approved','finished' , 'rejected')
+                    LIMIT 15 OFFSET $offset";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $id);
+            $pstmt->execute();
+            return json_encode($pstmt->fetchAll(PDO::FETCH_OBJ));
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
         }
     }
 
