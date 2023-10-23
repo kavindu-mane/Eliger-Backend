@@ -94,6 +94,12 @@ $app->post("/add_booking", function () {
 $app->post("/get_customer_booking", function () {
     Controller::post_router("/customer/get_customer_booking_process");
 });
+$app->post("/add_feedback", function () {
+    Controller::post_router("/customer/add_feedback_process");
+});
+$app->post("/cancel_booking", function () {
+    Controller::post_router("/customer/cancel_booking_process");
+});
 
 // owner
 $app->post("/get_owner", function () {

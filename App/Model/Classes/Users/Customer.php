@@ -94,9 +94,11 @@ class Customer extends User
     }
 
     // load bookings
-    public function loadBooking($connection, $id)
+    public function loadBooking($connection, $id, $offset)
     {
-        $query = "SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , vehicle.Passenger_amount , vehicle.Current_Lat , vehicle.Current_Long ,
+        $query = "WITH PaginatedResults AS (
+                    SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , vehicle.Passenger_amount , 
+                    vehicle.Current_Lat , vehicle.Current_Long ,
                     vehicle_owner_details.Owner_firstname , vehicle_owner_details.Owner_lastname , vehicle_owner_details.Owner_Tel,
                     driver_details.Driver_firstname , driver_details.Driver_lastname , driver_details.Driver_Tel,
                     payment.Payment_type , payment.Amount , payment.Datetime , feedback.Feedback_Id FROM booking 
@@ -110,8 +112,11 @@ class Customer extends User
                     ON driver_details.Driver_Id = booking.Driver_Id
                     LEFT JOIN feedback 
                     ON feedback.Booking_Id = booking.Booking_Id
-                    WHERE booking.Customer_Id = ?
-                    ORDER BY FIELD(booking.Booking_Status , 'approved' , 'pending','rejected','finished')";
+                    WHERE booking.Customer_Id = ?)
+                    SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                    FROM PaginatedResults
+                    ORDER BY FIELD(Booking_Status , 'approved' , 'pending','rejected','finished')
+                    LIMIT 15 OFFSET $offset";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $id);
@@ -119,6 +124,23 @@ class Customer extends User
             return json_encode($pstmt->fetchAll(PDO::FETCH_OBJ));
         } catch (PDOException $ex) {
             die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
+    public function addFeedback($connection, $customer, $vehicle, $booking, $rating, $comment)
+    {
+        $query = "INSERT INTO feedback( Description, Customer_Id, Vehicle_Id, Vehicle_rating, Booking_Id) VALUES (?,?,?,?,?)";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $comment);
+            $pstmt->bindValue(2, $customer);
+            $pstmt->bindValue(3, $vehicle);
+            $pstmt->bindValue(4, $rating);
+            $pstmt->bindValue(5, $booking);
+            $pstmt->execute();
+            return $pstmt->rowCount() === 1;
+        } catch (PDOException $ex) {
+            die("Error occurred : " . $ex->getMessage());
         }
     }
 

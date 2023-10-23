@@ -41,6 +41,18 @@ class Booking
         }
     }
 
+    public function cancelBooking($connection , $bookingId){
+        $query = "DELETE FROM booking WHERE Booking_Id = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $bookingId);
+            $pstmt->execute();
+            return $pstmt->rowCount() === 1;
+        } catch (PDOException $ex) {
+            die("Error occurred : " . $ex->getMessage());
+        }
+    }
+
     // getters and setters
     public function getCustomerId()
     {
