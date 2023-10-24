@@ -11,16 +11,14 @@ if (isset($_SESSION["user"],)) {
     foreach ($variable_array as $variable) {
         if (isset($_POST[$variable])) {
             if (empty(strip_tags(trim($_POST[$variable])))) {
-                if ($variable === "percentage") echo 19;
-                elseif ($variable === "address") echo 11;
+                if ($variable === "address") echo 11;
                 else echo array_search($variable, $variable_array);
                 exit();
             }
             // assign value to array
             $data_array[$variable] = strip_tags(trim($_POST[$variable]));
         } else {
-            if ($variable === "percentage") echo 19;
-            elseif ($variable === "address") echo 11;
+            if ($variable === "address") echo 11;
             else echo array_search($variable, $variable_array);
             exit();
         }
@@ -35,12 +33,6 @@ if (isset($_SESSION["user"],)) {
     // validate email
     if (!filter_var($data_array["email"], FILTER_VALIDATE_EMAIL)) {
         echo 7;
-        exit();
-    }
-
-    // validate percentage
-    if (!filter_var($data_array["percentage"], FILTER_VALIDATE_FLOAT)) {
-        echo 20;
         exit();
     }
 
@@ -91,7 +83,6 @@ if (isset($_SESSION["user"],)) {
                         $data_array["phone"],
                         $data_array["fname"],
                         $data_array["lname"],
-                        $data_array["percentage"],
                         "licence_doc/" . $new_img_name,
                         $data_array["address"],
                         $_POST["owner"]

@@ -11,7 +11,6 @@ class Driver extends User
     private $phone;
     private $firstName;
     private $lastName;
-    private $incomePercentage;
     private $licence;
     private $address;
     private $owner;
@@ -26,13 +25,12 @@ class Driver extends User
         }
     }
 
-    public function _construct10($email, $password, $type, $phone, $firstName, $lastName, $incomePercentage, $licence, $address, $owner)
+    public function _construct9($email, $password, $type, $phone, $firstName, $lastName, $licence, $address, $owner)
     {
         parent::__construct($email, $password, $type);
         $this->phone = $phone;
         $this->firstName = $firstName;
         $this->lastName = $lastName;
-        $this->incomePercentage = $incomePercentage;
         $this->licence = $licence;
         $this->address = $address;
         $this->owner = $owner;
@@ -47,7 +45,7 @@ class Driver extends User
     {
         if (parent::register($connection)) {
             try {
-                $query = "insert into driver (Driver_firstname , Driver_lastname , Driver_Tel , Email , Licence_File , Driver_address , Income_Percentage , Owner_Id) values(? , ? , ? , ? , ? , ? , ? , ?)";
+                $query = "insert into driver (Driver_firstname , Driver_lastname , Driver_Tel , Email , Licence_File , Driver_address , Owner_Id) values(? , ? , ? , ? , ? , ? , ?)";
                 $pstmt = $connection->prepare($query);
                 $pstmt->bindValue(1, $this->firstName);
                 $pstmt->bindValue(2, $this->lastName);
@@ -55,8 +53,7 @@ class Driver extends User
                 $pstmt->bindValue(4, $this->getEmail());
                 $pstmt->bindValue(5, $this->licence);
                 $pstmt->bindValue(6, $this->address);
-                $pstmt->bindValue(7, $this->incomePercentage);
-                $pstmt->bindValue(8, $this->owner);
+                $pstmt->bindValue(7, $this->owner);
                 $pstmt->execute();
 
                 parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
@@ -126,10 +123,5 @@ class Driver extends User
     public function getLicence()
     {
         return $this->licence;
-    }
-
-    public function getIncomePercentage()
-    {
-        return $this->incomePercentage;
     }
 }
