@@ -41,11 +41,13 @@ class Booking
         }
     }
 
-    public function cancelBooking($connection , $bookingId){
-        $query = "DELETE FROM booking WHERE Booking_Id = ?";
+    public function changeBookingStatus($connection, $bookingId, $status)
+    {
+        $query = "UPDATE booking SET Booking_Status = ? Where Booking_Id = ?";
         try {
             $pstmt = $connection->prepare($query);
-            $pstmt->bindValue(1, $bookingId);
+            $pstmt->bindValue(1, $status);
+            $pstmt->bindValue(2, $bookingId);
             $pstmt->execute();
             return $pstmt->rowCount() === 1;
         } catch (PDOException $ex) {

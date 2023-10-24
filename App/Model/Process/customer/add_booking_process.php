@@ -61,6 +61,9 @@ if (isset($_SESSION["user"])) {
                 }
             }
         }
+    } else {
+        echo 48;
+        exit();
     }
 } else {
     echo 14;

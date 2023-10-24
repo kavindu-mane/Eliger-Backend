@@ -165,7 +165,7 @@ class Vehicle
                 booking.Journey_Starting_Date , booking.Journey_Ending_Date
                 FROM vehicle
                 LEFT JOIN booking
-                ON vehicle.Vehicle_Id = booking.Vehicle_Id and (booking.Booking_Status = 'approved' or booking.Booking_Status = 'pending')
+                ON vehicle.Vehicle_Id = booking.Vehicle_Id and (booking.Booking_Status = 'approved' or booking.Booking_Status = 'pending' or booking.Booking_Status = 'driving')
                 WHERE vehicle.District = ? and vehicle.Booking_Type = 'rent-out'  and vehicle.Status = 'verified' 
                 and vehicle.Vehicle_type = ? and vehicle.Driver_Id Is $driver
                 ORDER BY vehicle.Vehicle_Id) as vehicle_booking

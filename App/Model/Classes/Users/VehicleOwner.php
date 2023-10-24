@@ -146,22 +146,25 @@ class VehicleOwner extends User
     public function loadBooking($connection, $id, $offset)
     {
         $query = "WITH PaginatedResults AS (
-                    SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , 
+                    SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , vehicle.Price ,
                     customer_details.Customer_firstname , customer_details.Customer_lastname , customer_details.Customer_Tel,
+                    vehicle_owner_details.Owner_firstname , vehicle_owner_details.Owner_lastname , vehicle_owner_details.Owner_Tel,
                     driver_details.Driver_firstname , driver_details.Driver_lastname ,
                     payment.Payment_type , payment.Amount , payment.Datetime FROM booking 
                     LEFT JOIN payment 
-                    ON  booking.Customer_Id = payment.Customer_Id 
+                    ON  booking.Booking_Id = payment.Booking_Id 
                     LEFT JOIN vehicle 
                     ON vehicle.Vehicle_Id = booking.vehicle_Id
                     LEFT JOIN customer_details 
                     ON customer_details.Customer_Id = booking.Customer_Id
+                    LEFT JOIN vehicle_owner_details 
+                    ON vehicle_owner_details.Owner_Id = booking.Owner_Id
                     LEFT JOIN driver_details 
                     ON driver_details.Driver_Id = booking.Driver_Id
                     WHERE booking.Owner_Id = ? and booking.Booking_Type = 'rent-out')
                     SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
                     FROM PaginatedResults
-                    ORDER BY FIELD(Booking_Status , 'pending','approved','finished' , 'rejected')
+                    ORDER BY Booking_Time DESC
                     LIMIT 15 OFFSET $offset";
         try {
             $pstmt = $connection->prepare($query);

@@ -100,6 +100,9 @@ $app->post("/add_feedback", function () {
 $app->post("/cancel_booking", function () {
     Controller::post_router("/customer/cancel_booking_process");
 });
+$app->post("/load_customer_payments", function () {
+    Controller::post_router("/customer/load_customer_payments_process");
+});
 
 // owner
 $app->post("/get_owner", function () {
@@ -122,6 +125,12 @@ $app->post("/load_owner_property", function () {
 });
 $app->post("/get_rentout_booking", function () {
     Controller::post_router("/owner/get_rentout_booking_process");
+});
+$app->post("/manage_rentout_booking_status", function () {
+    Controller::post_router("/owner/manage_rentout_booking_status_process");
+});
+$app->post("/finish_booking", function () {
+    Controller::post_router("/owner/finish_booking_process");
 });
 // driver
 $app->post("/get_driver", function () {

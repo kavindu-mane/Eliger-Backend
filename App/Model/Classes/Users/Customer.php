@@ -103,7 +103,7 @@ class Customer extends User
                     driver_details.Driver_firstname , driver_details.Driver_lastname , driver_details.Driver_Tel,
                     payment.Payment_type , payment.Amount , payment.Datetime , feedback.Feedback_Id FROM booking 
                     LEFT JOIN payment 
-                    ON  booking.Customer_Id = payment.Customer_Id 
+                    ON  booking.Booking_Id = payment.Booking_Id 
                     LEFT JOIN vehicle 
                     ON vehicle.Vehicle_Id = booking.vehicle_Id
                     LEFT JOIN vehicle_owner_details 
@@ -115,7 +115,7 @@ class Customer extends User
                     WHERE booking.Customer_Id = ?)
                     SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
                     FROM PaginatedResults
-                    ORDER BY FIELD(Booking_Status , 'approved' , 'pending','rejected','finished')
+                    ORDER BY Booking_Time DESC
                     LIMIT 15 OFFSET $offset";
         try {
             $pstmt = $connection->prepare($query);
