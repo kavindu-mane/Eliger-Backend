@@ -71,6 +71,7 @@ $app->post("/document_validate", function () {
 $app->post("/disable_user", function () {
     Controller::post_router("/admin/disable_user_process");
 });
+
 // help and support
 $app->post("/load_vehicles", function () {
     Controller::post_router("/hns/load_vehicles_process");
@@ -81,6 +82,7 @@ $app->post("/load_bookings", function () {
 $app->post("/load_feedbacks", function () {
     Controller::post_router("/hns/load_feedback_process");
 });
+
 // customer
 $app->post("/get_customer", function () {
     Controller::post_router("/customer/get_customer_process");
@@ -126,12 +128,25 @@ $app->post("/load_owner_property", function () {
 $app->post("/get_rentout_booking", function () {
     Controller::post_router("/owner/get_rentout_booking_process");
 });
+$app->post("/get_upcomming_rentout_booking", function () {
+    Controller::post_router("/owner/get_upcomming_rentout_booking_process");
+});
 $app->post("/manage_rentout_booking_status", function () {
     Controller::post_router("/owner/manage_rentout_booking_status_process");
 });
 $app->post("/finish_booking", function () {
     Controller::post_router("/owner/finish_booking_process");
 });
+$app->post("/load_owner_home_details", function () {
+    Controller::post_router("/owner/load_owner_home_details_process");
+});
+$app->post("/load_drivers_daily_income", function () {
+    Controller::post_router("/owner/load_drivers_daily_income_process");
+});
+$app->post("/load_owner_payments", function () {
+    Controller::post_router("/owner/load_owner_payments_process");
+});
+
 // driver
 $app->post("/get_driver", function () {
     Controller::post_router("/driver/get_driver_process");
@@ -139,4 +154,5 @@ $app->post("/get_driver", function () {
 $app->post("/update_driver", function () {
     Controller::post_router("/driver/driver_update_process");
 });
+
 $app->run();

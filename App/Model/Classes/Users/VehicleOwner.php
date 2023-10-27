@@ -176,6 +176,106 @@ class VehicleOwner extends User
         }
     }
 
+    // load bookings
+    public function loadUpcommingBooking($connection, $id)
+    {
+        $query = "SELECT booking.Journey_Starting_Date , booking.Journey_Ending_Date , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type
+                    FROM booking 
+                    INNER JOIN vehicle 
+                    ON vehicle.Vehicle_Id = booking.vehicle_Id
+                    INNER JOIN vehicle_owner_details 
+                    ON vehicle_owner_details.Owner_Id = booking.Owner_Id
+                    WHERE booking.Owner_Id = ? and booking.Booking_Type = 'rent-out' and (booking.Booking_Status = 'approved' or booking.Booking_Status = 'driving')
+                    and (booking.Journey_Starting_Date >= CURDATE() or booking.Journey_Ending_Date >= CURDATE())";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $id);
+            $pstmt->execute();
+            $rs = $pstmt->fetchAll(PDO::FETCH_OBJ);
+            if ($pstmt->rowCount() > 0) {
+                $resultArr = array();
+                $today = date("Y-m-d");
+                foreach ($rs as $result) {
+                    $travelDates = 1 +  intval((strtotime($result->Journey_Ending_Date) - strtotime($result->Journey_Starting_Date)) / (60 * 60 * 24));
+                    if ((strtotime($result->Journey_Starting_Date) - strtotime($today)) / (60 * 60 * 24) >= 0) {
+                        $row = $resultArr[$result->Journey_Starting_Date] ?? array();
+                        $row[count($row)] = "$result->Vehicle_PlateNumber ($result->Vehicle_type) $travelDates days booking start.";
+                        $resultArr[$result->Journey_Starting_Date] = $row;
+                    }
+                    if ((strtotime($result->Journey_Ending_Date) - strtotime($today)) / (60 * 60 * 24) >= 0) {
+                        $row = $resultArr[$result->Journey_Ending_Date] ?? array();
+                        $row[count($row)] = "$result->Vehicle_PlateNumber ($result->Vehicle_type) $travelDates days booking end.";
+                        $resultArr[$result->Journey_Ending_Date] = $row;
+                    }
+                }
+                echo json_encode($resultArr);
+            }
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
+    // load owner payment details
+    public function loadOwnerHomeDetails($connection, $id)
+    {
+        $date = date('Y-m-01');
+        $query = "SELECT vehicle_owner.Charges , vehicle_owner.Income , 
+                SUM(IF(payment.Payment_type = 'offline' AND DATE(payment.Datetime) = CURDATE(), 
+                payment.Amount * IF(booking.Driver_Id IS NULL , 0.9 , 0.6) , 0)) AS daily_offline_total ,
+                SUM(IF(payment.Payment_type = 'online' AND DATE(payment.Datetime) = CURDATE(),
+                payment.Amount * IF(booking.Driver_Id IS NULL , 0.9 , 0.6) , 0)) AS daily_online_total,
+                SUM(IF(payment.Payment_type = 'offline' AND DATE(payment.Datetime) >=  DATE($date), 
+                payment.Amount * IF(booking.Driver_Id IS NULL , 0.9 , 0.6), 0)) AS monthly_offline_total ,
+                SUM(IF(payment.Payment_type = 'online' AND DATE(payment.Datetime) >=  DATE($date), 
+                payment.Amount * IF(booking.Driver_Id IS NULL , 0.9 , 0.6), 0)) AS monthly_online_total  
+                FROM vehicle_owner 
+                INNER JOIN booking
+                ON booking.Owner_Id = vehicle_owner.Owner_Id
+                INNER JOIN payment
+                ON payment.Booking_Id = booking.Booking_Id
+                where vehicle_owner.Owner_Id = ?
+                GROUP BY vehicle_owner.Owner_Id";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $id);
+            $pstmt->execute();
+            return json_encode($pstmt->fetch(PDO::FETCH_OBJ));
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
+    // load drivers daily incomes
+    public function loadDriverIncomes($connection, $id)
+    {
+        $query = "SELECT * , (daily_offline_total + daily_online_total) AS today_total_income FROM
+                (SELECT driver.Driver_firstname , driver.Driver_lastname ,
+                SUM(IF(payment.Payment_type = 'offline' AND DATE(payment.Datetime) = CURDATE(), payment.Amount * 0.3 , 0)) AS daily_offline_total ,
+                SUM(IF(payment.Payment_type = 'online' AND DATE(payment.Datetime) = CURDATE(), payment.Amount * 0.3 , 0)) AS daily_online_total ,
+                SUM(IF(payment.Payment_type = 'offline' AND booking.Booking_Type = 'book-now' 
+                AND DATE(payment.Datetime) = CURDATE(), payment.Amount * 0.6 , 0)) AS book_now_owner_income,
+                SUM(IF(payment.Payment_type = 'offline' AND booking.Booking_Type = 'rent-out' 
+                AND DATE(payment.Datetime) = CURDATE(), payment.Amount * 0.3 , 0)) AS rent_out_driver_income
+                FROM vehicle_owner 
+                INNER JOIN driver
+                ON driver.Owner_Id = vehicle_owner.Owner_Id
+                INNER JOIN booking
+                ON booking.Driver_Id = driver.Driver_Id
+                LEFT JOIN payment
+                ON payment.Booking_Id = booking.Booking_Id
+                where vehicle_owner.Owner_Id = ?
+                GROUP BY driver.Driver_Id) AS calculated_data
+                ORDER BY today_total_income DESC";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $id);
+            $pstmt->execute();
+            return json_encode($pstmt->fetchAll(PDO::FETCH_OBJ));
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
     // getters
     public function getFirstName()
     {
