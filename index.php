@@ -154,5 +154,13 @@ $app->post("/get_driver", function () {
 $app->post("/update_driver", function () {
     Controller::post_router("/driver/driver_update_process");
 });
+$app->post("/load_driver_booknow_bookings", function () {
+    Controller::post_router("/driver/load_driver_booknow_bookings_process");
+});
+
+$app->post("/load_driver_rentout_bookings", function () {
+    Controller::post_router("/driver/load_driver_rentout_bookings_process");
+});
+
 
 $app->run();

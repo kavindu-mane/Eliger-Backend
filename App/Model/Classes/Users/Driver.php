@@ -65,7 +65,7 @@ class Driver extends User
     }
 
     // update function
-    public function updateDriver($connection, $email , $data)
+    public function updateDriver($connection, $email, $data)
     {
         $query = "update driver set Driver_firstname =? , Driver_lastname = ? , Driver_address = ? , Driver_Tel = ? where Email = ?";
         try {
@@ -87,7 +87,9 @@ class Driver extends User
     //Load vehicles
     public function loadDriver($connection, $email)
     {
-        $query = "SELECT driver_details.Driver_Id , driver_details.Status , driver_details.Driver_firstname , driver_details.Driver_lastname , driver_details.Driver_Tel , driver_details.Driver_address , driver_details.Email , vehicle.Vehicle_type , vehicle.Availability , vehicle.Vehicle_PlateNumber FROM driver_details 
+        $query = "SELECT driver_details.Driver_Id , driver_details.Status , driver_details.Driver_firstname , driver_details.Driver_lastname , 
+                driver_details.Driver_Tel , driver_details.Driver_address , driver_details.Email , vehicle.Vehicle_type , vehicle.Availability , 
+                vehicle.Booking_Type ,vehicle.Vehicle_PlateNumber FROM driver_details 
                 LEFT JOIN vehicle ON driver_details.Driver_Id = vehicle.Driver_Id  WHERE driver_details.Email = ?";
         try {
             $pstmt = $connection->prepare($query);
@@ -96,6 +98,36 @@ class Driver extends User
             return json_encode($pstmt->fetch(PDO::FETCH_OBJ));
         } catch (PDOException $ex) {
             die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load booknow bookings
+    public function loadBookNowBooking($connection, $id)
+    {
+        $query = "SELECT * FROM booking WHERE Driver_Id = ? AND Booking_Type = 'book-now' 
+        AND Booking_Status = 'pending' ORDER BY Booking_Time";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $id);
+            $pstmt->execute();
+            return json_encode($pstmt->fetchAll(PDO::FETCH_OBJ));
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
+        }
+    }
+
+    // load rent-out bookings
+    public function loadRentOutBooking($connection, $id)
+    {
+        $query = "SELECT * FROM booking WHERE Driver_Id = ? AND Booking_Type = 'rent-out' 
+        AND Booking_Status = 'approved' ORDER BY Booking_Time";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $id);
+            $pstmt->execute();
+            return json_encode($pstmt->fetchAll(PDO::FETCH_OBJ));
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
         }
     }
 
