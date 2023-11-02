@@ -54,6 +54,12 @@ $app->post("/get_nearest", function () {
 $app->post("/get_vehicle_by_district", function () {
     Controller::post_router("get_vehicle_by_district_process");
 });
+$app->post("/finish_booking", function () {
+    Controller::post_router("finish_booking_process");
+});
+$app->post("/manage_booking_status", function () {
+    Controller::post_router("manage_booking_status_process");
+});
 
 // admin
 $app->post("/create_hns", function () {
@@ -131,12 +137,6 @@ $app->post("/get_rentout_booking", function () {
 $app->post("/get_upcomming_rentout_booking", function () {
     Controller::post_router("/owner/get_upcomming_rentout_booking_process");
 });
-$app->post("/manage_rentout_booking_status", function () {
-    Controller::post_router("/owner/manage_rentout_booking_status_process");
-});
-$app->post("/finish_booking", function () {
-    Controller::post_router("/owner/finish_booking_process");
-});
 $app->post("/load_owner_home_details", function () {
     Controller::post_router("/owner/load_owner_home_details_process");
 });
@@ -157,10 +157,14 @@ $app->post("/update_driver", function () {
 $app->post("/load_driver_booknow_bookings", function () {
     Controller::post_router("/driver/load_driver_booknow_bookings_process");
 });
-
 $app->post("/load_driver_rentout_bookings", function () {
     Controller::post_router("/driver/load_driver_rentout_bookings_process");
 });
-
+$app->post("/vehicle_availability_change", function () {
+    Controller::post_router("/driver/vehicle_availability_change_process");
+});
+$app->post("/vehicle_location_change_process", function () {
+    Controller::post_router("/driver/vehicle_location_change_process_process");
+});
 
 $app->run();

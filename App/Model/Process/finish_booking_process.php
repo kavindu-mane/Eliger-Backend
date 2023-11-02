@@ -9,9 +9,10 @@ if (isset($_SESSION["user"])) {
             filter_var($_POST["booking"], FILTER_VALIDATE_INT) &&
             filter_var($_POST["amount"], FILTER_VALIDATE_FLOAT)
         ) {
+            $method = isset($_POST["isOnline"]) ? "online" : "offline";
             $payment = new Payment();
             $payment->setBookingId($_POST["booking"]);
-            $payment->setPaymentType("offline");
+            $payment->setPaymentType($method);
             $payment->setAmount($_POST["amount"]);
             if ($payment->pay(DBConnector::getConnection())) {
                 echo 200;

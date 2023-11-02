@@ -191,6 +191,37 @@ class Vehicle
         }
     }
 
+    // update vehicle status
+    public function changeVehicleStatus($connection, $id, $availability)
+    {
+        $query = "UPDATE vehicle SET Availability = ? WHERE Vehicle_Id = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $availability);
+            $pstmt->bindValue(2, $id);
+            $pstmt->execute();
+            return $pstmt->rowCount() === 1;
+        } catch (PDOException $ex) {
+            die("Error occurred : " . $ex->getMessage());
+        }
+    }
+
+    // update vehicle location
+    public function changeLocationStatus($connection, $id, $lat, $lng)
+    {
+        $query = "UPDATE vehicle SET Current_Lat = ? , Current_Long = ? WHERE Vehicle_Id = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $lat);
+            $pstmt->bindValue(1, $lng);
+            $pstmt->bindValue(2, $id);
+            $pstmt->execute();
+            return $pstmt->rowCount() === 1;
+        } catch (PDOException $ex) {
+            die("Error occurred : " . $ex->getMessage());
+        }
+    }
+
     // getters
     public function getVehicleType()
     {
