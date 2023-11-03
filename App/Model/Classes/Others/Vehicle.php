@@ -213,8 +213,8 @@ class Vehicle
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $lat);
-            $pstmt->bindValue(1, $lng);
-            $pstmt->bindValue(2, $id);
+            $pstmt->bindValue(2, $lng);
+            $pstmt->bindValue(3, $id);
             $pstmt->execute();
             return $pstmt->rowCount() === 1;
         } catch (PDOException $ex) {

@@ -163,8 +163,8 @@ $app->post("/load_driver_rentout_bookings", function () {
 $app->post("/vehicle_availability_change", function () {
     Controller::post_router("/driver/vehicle_availability_change_process");
 });
-$app->post("/vehicle_location_change_process", function () {
-    Controller::post_router("/driver/vehicle_location_change_process_process");
+$app->post("/vehicle_location_change", function () {
+    Controller::post_router("/driver/vehicle_location_change_process");
 });
 
 $app->run();

@@ -89,7 +89,7 @@ class Driver extends User
     {
         $query = "SELECT driver_details.Driver_Id , driver_details.Status , driver_details.Driver_firstname , driver_details.Driver_lastname , 
                 driver_details.Driver_Tel , driver_details.Driver_address , driver_details.Email , vehicle.Vehicle_type , vehicle.Availability , 
-                vehicle.Vehicle_Id , vehicle.Booking_Type ,vehicle.Vehicle_PlateNumber FROM driver_details 
+                vehicle.Vehicle_Id , vehicle.Booking_Type ,vehicle.Vehicle_PlateNumber , vehicle.Price FROM driver_details 
                 LEFT JOIN vehicle ON driver_details.Driver_Id = vehicle.Driver_Id  WHERE driver_details.Email = ?";
         try {
             $pstmt = $connection->prepare($query);
