@@ -142,6 +142,26 @@ class VehicleOwner extends User
         }
     }
 
+    //Load available drivers
+    public function loadAvailableDriver($connection, $email)
+    {
+        $query = "SELECT driver_details.* from driver_details 
+                left join vehicle_owner_details 
+                on vehicle_owner_details.Owner_Id = driver_details.Owner_Id 
+                left join vehicle
+                on vehicle.Driver_Id = driver_details.Driver_Id
+                where vehicle_owner_details.Email = ? and driver_details.Status = 'verified' and vehicle.Driver_Id is null";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
     // load bookings
     public function loadBooking($connection, $id, $offset)
     {
