@@ -6,7 +6,7 @@ use EligerBackend\Model\Classes\Users\User;
 
 if (isset($_SESSION["user"],)) {
     // check any value is empty
-    $variable_array = array("fname", "lname", "phone", "email", "password", "confPassword", "percentage", "address");
+    $variable_array = array("fname", "lname", "phone", "email", "password", "confPassword", "address");
     $data_array = array();
     foreach ($variable_array as $variable) {
         if (isset($_POST[$variable])) {
@@ -25,7 +25,7 @@ if (isset($_SESSION["user"],)) {
     }
 
     // validate phone number
-    if (!preg_match('/^[+]{0,1}[0-9]{10,11}$/', $data_array["phone"])) {
+    if (!preg_match('/^[0-9]{11}$/', $data_array["phone"])) {
         echo 6;
         exit();
     }
