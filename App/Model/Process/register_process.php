@@ -35,7 +35,7 @@ if (isset($_POST["account-type"])) {
     }
 
     // validate phone number
-    if (!preg_match('/^[+]{0,1}[0-9]{10,11}$/', $data_array["phone"])) {
+    if (!preg_match('/^[0-9]{11}$/', $data_array["phone"])) {
         echo 6;
         exit();
     }

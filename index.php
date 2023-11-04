@@ -175,5 +175,8 @@ $app->post("/vehicle_availability_change", function () {
 $app->post("/vehicle_location_change", function () {
     Controller::post_router("/driver/vehicle_location_change_process");
 });
+$app->post("/load_driver_payment", function () {
+    Controller::post_router("/driver/load_driver_payment_process");
+});
 
 $app->run();
