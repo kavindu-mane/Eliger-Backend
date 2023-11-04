@@ -9,10 +9,8 @@ if (isset($_SESSION["user"])) {
             filter_var($_POST["vehicle"], FILTER_VALIDATE_INT)
         ) {
             $vehicle = new Vehicle();
-            if ($vehicle->getVehicleCurrentLocation(DBConnector::getConnection(), $_POST["vehicle"])) {
-                echo 200;
-                exit();
-            }
+            echo $vehicle->getVehicleCurrentLocation(DBConnector::getConnection(), $_POST["vehicle"]);
+            exit();
         }
     }
 } else {

@@ -229,8 +229,8 @@ class Vehicle
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $vehicle);
             $pstmt->execute();
-            $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
-            return empty($result);
+            $result = $pstmt->fetch(PDO::FETCH_ASSOC);
+            return json_encode($result);
         } catch (PDOException $ex) {
             die("Error occurred : " . $ex->getMessage());
         }
