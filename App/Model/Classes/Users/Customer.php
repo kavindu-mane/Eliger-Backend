@@ -98,7 +98,7 @@ class Customer extends User
     {
         $query = "WITH PaginatedResults AS (
                     SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , vehicle.Passenger_amount , 
-                    vehicle.Current_Lat , vehicle.Current_Long ,
+                    vehicle.Current_Lat , vehicle.Current_Long , vehicle.Price,
                     vehicle_owner_details.Owner_firstname , vehicle_owner_details.Owner_lastname , vehicle_owner_details.Owner_Tel,
                     driver_details.Driver_firstname , driver_details.Driver_lastname , driver_details.Driver_Tel,
                     payment.Payment_type , payment.Amount , payment.Datetime , feedback.Feedback_Id FROM booking 

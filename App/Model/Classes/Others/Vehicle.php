@@ -222,6 +222,20 @@ class Vehicle
         }
     }
 
+    public function getVehicleCurrentLocation($connection, $vehicle)
+    {
+        $query = "SELECT Current_Lat , Current_Long from vehicle where Vehicle_Id = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $vehicle);
+            $pstmt->execute();
+            $result = $pstmt->fetchAll(PDO::FETCH_ASSOC);
+            return empty($result);
+        } catch (PDOException $ex) {
+            die("Error occurred : " . $ex->getMessage());
+        }
+    }
+
     // getters
     public function getVehicleType()
     {
