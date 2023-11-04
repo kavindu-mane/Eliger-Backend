@@ -146,6 +146,9 @@ $app->post("/load_drivers_daily_income", function () {
 $app->post("/load_owner_payments", function () {
     Controller::post_router("/owner/load_owner_payments_process");
 });
+$app->post("/load_available_drivers", function () {
+    Controller::post_router("/owner/load_available_drivers_process");
+});
 
 // driver
 $app->post("/get_driver", function () {
