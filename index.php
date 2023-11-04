@@ -114,6 +114,9 @@ $app->post("/load_customer_payments", function () {
 $app->post("/get_vehicle_current_location", function () {
     Controller::post_router("/customer/get_vehicle_current_location_process");
 });
+$app->post("/online_payment", function () {
+    Controller::post_router("/customer/online_payment_process");
+});
 
 // owner
 $app->post("/get_owner", function () {
