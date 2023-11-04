@@ -111,6 +111,9 @@ $app->post("/cancel_booking", function () {
 $app->post("/load_customer_payments", function () {
     Controller::post_router("/customer/load_customer_payments_process");
 });
+$app->post("/get_vehicle_current_location", function () {
+    Controller::post_router("/customer/get_vehicle_current_location_process");
+});
 
 // owner
 $app->post("/get_owner", function () {
