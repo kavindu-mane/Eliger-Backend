@@ -16,7 +16,7 @@ if (isset($_SESSION["user"], $_POST["offset"])) {
 
             //pass data(function call)
             $admin = new Admin();
-            echo json_encode($admin->loadNewDriver(DBConnector::getConnection(), $_POST["driver_status"]));
+            echo json_encode($admin->loadNewDriver(DBConnector::getConnection(), $_POST["driver_status"], $_POST["offset"]));
             exit();
         }
     }

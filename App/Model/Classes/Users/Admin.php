@@ -46,9 +46,9 @@ class Admin extends User
                 SELECT vehicle.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname 
                 from vehicle inner join vehicle_owner on vehicle_owner.Owner_Id=vehicle.Owner_Id AND vehicle.Status = ? )
                 SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
-                    FROM PaginatedResults
-                    ORDER BY Vehicle_Id
-                    LIMIT 15 OFFSET $offset";
+                FROM PaginatedResults
+                ORDER BY Vehicle_Id
+                LIMIT 15 OFFSET $offset";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -61,9 +61,15 @@ class Admin extends User
     }
 
     //Load new driver registrations
-    public function loadNewDriver($connection, $status)
+    public function loadNewDriver($connection, $status , $offset)
     {
-        $query = "select driver.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname from driver inner join vehicle_owner on vehicle_owner.Owner_Id=driver.Owner_Id AND driver.Status = ? ";
+        $query = "WITH PaginatedResults AS (
+                SELECT driver.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname 
+                from driver inner join vehicle_owner on vehicle_owner.Owner_Id=driver.Owner_Id AND driver.Status = ? )
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                ORDER BY Driver_Id
+                LIMIT 15 OFFSET $offset";
 
         try {
             $pstmt = $connection->prepare($query);
