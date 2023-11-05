@@ -108,8 +108,8 @@ class Vehicle
             $pstmt->bindValue(2, $data["price"]);
             if (count($data) > 3) $pstmt->bindValue(3, $data["district"]);
             if (count($data) === 7) $pstmt->bindValue(4, $data["availability"]);
-            $pstmt->bindValue(count($data) - 2, $data["lat"]);
-            $pstmt->bindValue(count($data) - 1, $data["long"]);
+            if (count($data) > 3) $pstmt->bindValue(count($data) - 2, $data["lat"]);
+            if (count($data) > 3) $pstmt->bindValue(count($data) - 1, $data["long"]);
             $pstmt->bindValue(count($data), $data["vehicle-id"]);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {

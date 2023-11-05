@@ -40,9 +40,15 @@ class Admin extends User
     }
 
     //Load new vehicle registrations
-    public function loadNewVehicles($connection, $status)
+    public function loadNewVehicles($connection, $status, $offset)
     {
-        $query = "select vehicle.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname from vehicle inner join vehicle_owner on vehicle_owner.Owner_Id=vehicle.Owner_Id AND vehicle.Status = ? ";
+        $query = "WITH PaginatedResults AS (
+                SELECT vehicle.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname 
+                from vehicle inner join vehicle_owner on vehicle_owner.Owner_Id=vehicle.Owner_Id AND vehicle.Status = ? )
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                    FROM PaginatedResults
+                    ORDER BY Vehicle_Id
+                    LIMIT 15 OFFSET $offset";
 
         try {
             $pstmt = $connection->prepare($query);
@@ -89,10 +95,10 @@ class Admin extends User
     }
 
     // Review Document function
-    public function reviewDocument($connection,$type, $status, $Id)
+    public function reviewDocument($connection, $type, $status, $Id)
     {
         $query = "update driver set Status = ? where Driver_Id = ?";
-        if($type === "vehicle"){
+        if ($type === "vehicle") {
             $query = "update vehicle set Status = ? where Vehicle_Id = ?";
         }
         try {
