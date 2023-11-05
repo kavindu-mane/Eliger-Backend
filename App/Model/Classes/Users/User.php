@@ -119,7 +119,7 @@ class User
 
             // set cookie for 30 days
             setcookie('remember_token', $token, time() + (30 * 24 * 60 * 60), '/');
-            // setcookie('remember_token', $token, ['expires' => time() + 30 * 24 * 3600, 'path' => '/', 'domain' => 'kavindu.me', 'samesite' => 'None', 'secure' => true, 'httponly' => true]);
+            // setcookie('remember_token', $token, ['expires' => time() + 30 * 24 * 3600, 'path' => '/', 'domain' => 'eliger-backend.000webhostapp.com', 'samesite' => 'None', 'secure' => true, 'httponly' => true]);
         }
     }
 
@@ -169,6 +169,7 @@ class User
         session_unset();
         session_destroy();
         setcookie('remember_token', '', time() - 3600, '/');
+        // setcookie('remember_token', '', ['expires' => time() - 3600, 'path' => '/', 'domain' => 'eliger-backend.000webhostapp.com', 'samesite' => 'None', 'secure' => true, 'httponly' => true]);
     }
 
     // update function

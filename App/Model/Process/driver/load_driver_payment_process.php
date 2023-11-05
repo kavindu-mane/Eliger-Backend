@@ -5,9 +5,7 @@ use EligerBackend\Model\Classes\Others\Payment;
 
 if (isset($_SESSION["user"])) {
     if (isset($_POST["offset"])) {
-        if (
-            filter_var($_POST["offset"], FILTER_VALIDATE_INT)
-        ) {
+        if (filter_var($_POST["offset"], FILTER_VALIDATE_INT) || $_POST["offset"] == 0) {
             $query = "SELECT Driver_Id from driver_details where Email = ?";
             $pstmt = DBConnector::getConnection()->prepare($query);
             $pstmt->bindValue(1, $_SESSION["user"]["id"]);
