@@ -5,15 +5,22 @@ use EligerBackend\Model\Classes\Users\User;
 
 if (isset($_SESSION["user"])) {
     $data_array = array();
-    if (isset($_POST["update_email"])) {
+    if (isset($_POST["update_email"] , $_POST["email"] , $_POST["password"])) {
         // check email value is empty
         if (empty(strip_tags(trim($_POST["email"])))) {
             echo 3;
             exit();
         }
 
+        // check password value is empty
+        if (empty(strip_tags(trim($_POST["password"])))) {
+            echo 4;
+            exit();
+        }
+
         // assign value to array
         $data_array["email"] = strip_tags(trim($_POST["email"]));
+        $data_array["password"] = strip_tags(trim($_POST["password"]));
 
         // validate email
         if (!filter_var($data_array["email"], FILTER_VALIDATE_EMAIL)) {
@@ -25,7 +32,12 @@ if (isset($_SESSION["user"])) {
             echo 10;
             exit();
         }
-        $user = new User();
+        $user = new User($_SESSION["user"]["id"], $data_array["password"]);
+        // check password is correct or not
+        if ($user->login(DBConnector::getConnection(), false) === 13) {
+            echo 18;
+            exit();
+        }
         echo $user->update(DBConnector::getConnection(), "Email", $data_array["email"]);
         exit();
     } elseif (isset($_POST["update_password"])) {
@@ -74,7 +86,9 @@ if (isset($_SESSION["user"])) {
         exit();
     } else {
         echo 500;
+        exit();
     }
 } else {
     echo 14;
+    exit();
 }
