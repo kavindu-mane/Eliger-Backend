@@ -18,16 +18,34 @@ class Admin extends User
     }
 
     //load Accounts
-    public function loadAccountDetails($connection, $account_type, $status)
+    public function loadAccountDetails($connection, $account_type, $status , $offset)
     {
-        $query = "select * from customer_details where Account_Status=?";
+        $query = "WITH PaginatedResults AS ( SELECT * from customer_details where Account_Status=? )
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                ORDER BY Customer_Id
+                LIMIT 15 OFFSET $offset";
 
         if ($account_type === "driver") {
-            $query = "select driver_details.* , vehicle_owner_details.Owner_firstname , vehicle_owner_details.Owner_lastname from driver_details inner join vehicle_owner_details on driver_details.Owner_Id = vehicle_owner_details.Owner_Id and driver_details.Account_Status=?";
+            $query = "WITH PaginatedResults AS ( SELECT driver_details.* , vehicle_owner_details.Owner_firstname , 
+            vehicle_owner_details.Owner_lastname from driver_details inner join vehicle_owner_details 
+            on driver_details.Owner_Id = vehicle_owner_details.Owner_Id and driver_details.Account_Status=? )
+            SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+            FROM PaginatedResults
+            ORDER BY Driver_Id
+            LIMIT 15 OFFSET $offset";
         } elseif ($account_type === "hands") {
-            $query = "select * from hands_details where Account_Status=?";
+            $query = "WITH PaginatedResults AS ( SELECT * from hands_details where Account_Status=? )
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                ORDER BY staff_id
+                LIMIT 15 OFFSET $offset";
         } elseif ($account_type === "vehicle_owner") {
-            $query = "select * from vehicle_owner_details where Account_Status=?";
+            $query = "WITH PaginatedResults AS ( SELECT * from vehicle_owner_details where Account_Status=? )
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                ORDER BY Owner_Id
+                LIMIT 15 OFFSET $offset";
         }
         try {
             $pstmt = $connection->prepare($query);

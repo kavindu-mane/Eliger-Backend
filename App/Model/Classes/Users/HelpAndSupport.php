@@ -29,8 +29,8 @@ class HelpAndSupport extends User
     }
     public function _construct0()
     {
-        
     }
+    
     public function register($connection)
     {
         if (parent::register($connection)) {
@@ -49,28 +49,47 @@ class HelpAndSupport extends User
             }
         }
     }
-    public function loadManageBooking($connection,$status)
+
+    public function loadManageBooking($connection, $offset)
     {
-        $query = "select * from booking where Booking_Status=?";
+        $query = "WITH PaginatedResults AS (
+                    SELECT booking.* , vehicle.Vehicle_PlateNumber ,vehicle.Vehicle_type , 
+                    concat(customer_details.Customer_firstname , ' ' ,customer_details.Customer_lastname) AS Customer, 
+                    concat(vehicle_owner_details.Owner_firstname , ' ' , vehicle_owner_details.Owner_lastname) AS Owner,
+                    concat(driver_details.Driver_firstname , ' ' , driver_details.Driver_lastname) AS Driver FROM booking 
+                    LEFT JOIN vehicle 
+                    ON vehicle.Vehicle_Id = booking.vehicle_Id
+                    LEFT JOIN customer_details 
+                    ON customer_details.Customer_Id = booking.Customer_Id
+                    LEFT JOIN vehicle_owner_details 
+                    ON vehicle_owner_details.Owner_Id = booking.Owner_Id
+                    LEFT JOIN driver_details 
+                    ON driver_details.Driver_Id = booking.Driver_Id 
+                    WHERE booking.Booking_Status = 'approved' OR booking.Booking_Status = 'pending' OR booking.Booking_Status = 'driving')
+                    SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                    FROM PaginatedResults
+                    ORDER BY Booking_Time DESC
+                    LIMIT 15 OFFSET $offset";
 
         try {
             $pstmt = $connection->prepare($query);
-            $pstmt->bindValue(1, $status);
-
             $pstmt->execute();
             return $pstmt->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $ex) {
             die(" Error : " . $ex->getMessage());
         }
     }
-    public function loadManageVehicles($connection, $status)
-    {
-        $query = "select * from vehicle where Status=?";
 
+    public function loadManageVehicles($connection, $offset)
+    {
+        $query = "WITH PaginatedResults AS ( SELECT vehicle.* , concat(vehicle_owner. Owner_firstname , ' ' , vehicle_owner. Owner_lastname) AS Owner from vehicle 
+                INNER JOIN vehicle_owner ON vehicle_owner.Owner_Id = vehicle.Owner_Id)
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                ORDER BY Vehicle_Id
+                LIMIT 15 OFFSET $offset";
         try {
             $pstmt = $connection->prepare($query);
-            $pstmt->bindValue(1, $status);
-
             $pstmt->execute();
             return $pstmt->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $ex) {
@@ -78,10 +97,17 @@ class HelpAndSupport extends User
         }
     }
 
-
-    public function loadManageFeedback($connection)
+    public function loadManageFeedback($connection, $offset)
     {
-        $query = "select * from feedback";
+        $query = "WITH PaginatedResults AS ( SELECT feedback.* , 
+                concat(customer_details.Customer_firstname , ' ' ,customer_details.Customer_lastname) AS Customer, 
+                vehicle.Vehicle_PlateNumber from feedback 
+                INNER JOIN customer_details ON customer_details.Customer_Id = feedback.Customer_Id
+                INNER JOIN vehicle ON vehicle.Vehicle_Id = feedback.Vehicle_Id)
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                ORDER BY Feedback_Id
+                LIMIT 15 OFFSET $offset";
 
         try {
             $pstmt = $connection->prepare($query);
