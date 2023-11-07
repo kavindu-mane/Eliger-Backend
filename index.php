@@ -57,6 +57,15 @@ $app->post("/finish_booking", function () {
 $app->post("/manage_booking_status", function () {
     Controller::post_router("manage_booking_status_process");
 });
+$app->post("/send_reset_email", function () {
+    Controller::post_router("send_reset_email_process");
+});
+$app->post("/verify_reset_request", function () {
+    Controller::post_router("verify_reset_request_process");
+});
+$app->post("/reset_password", function () {
+    Controller::post_router("reset_password_process");
+});
 
 // admin
 $app->post("/create_hns", function () {

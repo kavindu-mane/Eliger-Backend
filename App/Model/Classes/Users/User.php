@@ -198,19 +198,66 @@ class User
         }
     }
 
-    // account verification function
-    public function verify($vericationCode, $connection)
+    // reset password
+    public function resetPassword($connection, $password, $verificationCode)
     {
-        $delete_query = "delete from verification where Verification_Code = ?";
-        $pstmt = $connection->prepare($delete_query);
-        $pstmt->bindValue(1, $vericationCode);
-        $pstmt->execute();
-        $rows = $pstmt->rowCount();
+        try {
+            if ($this->verifyResetRequest($verificationCode, $connection) === 200) {
+                $query = "UPDATE user INNER JOIN verification
+                ON verification.Email = user.Email 
+                SET user.Password = ?
+                WHERE verification.Verification_Code = ?";
+                $pstmt = $connection->prepare($query);
+                $pstmt->bindValue(1, $password);
+                $pstmt->bindValue(2, $verificationCode);
+                $pstmt->execute();
+                if ($pstmt->rowCount() === 1) {
+                    return $this->verify($verificationCode, $connection);
+                }
+            }
+            return 500;
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
 
-        if ($rows < 1) {
-            return 12;
-        } else {
-            return 200;
+    // account verification function
+    public function verify($verificationCode, $connection)
+    {
+        try {
+            $delete_query = "DELETE from verification where Verification_Code = ?";
+            $pstmt = $connection->prepare($delete_query);
+            $pstmt->bindValue(1, $verificationCode);
+            $pstmt->execute();
+            $rows = $pstmt->rowCount();
+
+            if ($rows < 1) {
+                return 12;
+            } else {
+                return 200;
+            }
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // reset password verification function
+    public function verifyResetRequest($verificationCode, $connection)
+    {
+        try {
+            $query = "SELECT * from verification where Verification_Code = ? and Type = 'reset_pass'";
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $verificationCode);
+            $pstmt->execute();
+            $rows = $pstmt->rowCount();
+
+            if ($rows < 1) {
+                return 12;
+            } else {
+                return 200;
+            }
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
         }
     }
 
