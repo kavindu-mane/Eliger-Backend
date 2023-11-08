@@ -1,6 +1,7 @@
 <?php
 
 use EligerBackend\Model\Classes\Connectors\DBConnector;
+use EligerBackend\Model\Classes\Users\Customer;
 use EligerBackend\Model\Classes\Users\User;
 
 if (isset($_POST['captcha']) && !empty($_POST['captcha'])) {
@@ -20,10 +21,15 @@ if (isset($_POST['captcha']) && !empty($_POST['captcha'])) {
 
             $email = strip_tags(trim($_POST["email"]));
             $password = strip_tags(trim($_POST["password"]));
-            $remember = isset($_POST['remember']) ? true : false;
 
             $user = new User($email, $password);
-            echo $user->login(DBConnector::getConnection(), $remember);
+            // check password is correct or not
+            if ($user->login(DBConnector::getConnection(), false) === 13) {
+                echo 18;
+                exit();
+            }
+            $customer = new Customer();
+            echo $customer->deleteCustomer(DBConnector::getConnection(), $email);
             exit();
         }
     }

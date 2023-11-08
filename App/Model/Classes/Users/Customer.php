@@ -1,6 +1,6 @@
 <?php
 
-namespace EligerBackend\model\classes\Users;
+namespace EligerBackend\Model\Classes\Users;
 
 use EligerBackend\Model\Classes\Users\User;
 use PDO;
@@ -127,6 +127,7 @@ class Customer extends User
         }
     }
 
+    // add feedback for vehicle
     public function addFeedback($connection, $customer, $vehicle, $booking, $rating, $comment)
     {
         $query = "INSERT INTO feedback( Description, Customer_Id, Vehicle_Id, Vehicle_rating, Booking_Id) VALUES (?,?,?,?,?)";
@@ -141,6 +142,22 @@ class Customer extends User
             return $pstmt->rowCount() === 1;
         } catch (PDOException $ex) {
             die("Error occurred : " . $ex->getMessage());
+        }
+    }
+
+    public function deleteCustomer($connection, $email)
+    {
+        try {
+            $query = "UPDATE user SET Email = concat(NOW(),Email) , Account_Status = 'deleted' WHERE Email = ?";
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                $this->logout(); // close session and remove cookies
+                return 200;
+            }
+        } catch (PDOException $ex) {
+            die("Loading Error : " . $ex->getMessage());
         }
     }
 

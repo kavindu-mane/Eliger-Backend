@@ -3,6 +3,7 @@
 namespace EligerBackend\Model\Classes\Users;
 
 use EligerBackend\Model\Classes\Connectors\EmailConnector;
+use EligerBackend\Model\Classes\Connectors\WhatsAppConnector;
 use Exception;
 use PDO;
 use PDOException;
@@ -216,6 +217,60 @@ class User
                 }
             }
             return 500;
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    public function generateOTP($connection)
+    {
+        try {
+            $otp = 0;
+            while (true) {
+                $otp = rand(100000, 999999);
+                $check_query = "select * from verification where Verification_Code = ?";
+                $pstmt = $connection->prepare($check_query);
+                $pstmt->bindValue(1, $otp);
+                $pstmt->execute();
+                if ($pstmt->rowCount() < 1) break;
+            }
+            return $otp;
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    public function sendOTP($connection, $verificationCode)
+    {
+        try {
+            $query = "SELECT users.phone , verification.Email , users.full_name FROM users INNER JOIN verification
+            ON verification.Email = users.Email WHERE verification.Verification_Code = ?";
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $verificationCode);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                $result = $pstmt->fetch(PDO::FETCH_ASSOC);
+                if ($result["phone"] === null) {
+                    return $this->verify($verificationCode, $connection); // this is H&S account
+                } else {
+                    $otp = $this->generateOTP($connection); // generate new OTP 
+                    $query = "UPDATE verification SET Verification_Code = ? , Type = ? , RemoveTime = date_add(now(),interval 5 minute)";
+                    $pstmt = $connection->prepare($query);
+                    $pstmt->bindValue(1, $otp);
+                    $pstmt->bindValue(2, "otp");
+                    $pstmt->execute();
+
+                    // msg for OTP
+                    $msg = "Hello {$result['full_name']},\nYour OTP is: {$otp}. Please note that the OTP will be expired after 5 minutes.";
+                    if (WhatsAppConnector::sendWhatsAppMessage($result["phone"], $msg)) {
+                        return substr($result["phone"], 0, 4) . "xxxx" . substr($result["phone"], 8);
+                    } else {
+                        return 12;
+                    }
+                }
+            } else {
+                return 12;
+            }
         } catch (Exception $ex) {
             die("Registration Error : " . $ex->getMessage());
         }

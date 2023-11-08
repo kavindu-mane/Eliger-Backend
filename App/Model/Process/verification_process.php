@@ -5,7 +5,7 @@ use EligerBackend\Model\Classes\Users\User;
 
 if (isset($_POST["code"])) {
     $user = new User();
-    echo $user->verify($_POST["code"], DBConnector::getConnection());
+    echo $user->sendOTP(DBConnector::getConnection(), $_POST["code"]);
 } else {
     echo 500;
 }

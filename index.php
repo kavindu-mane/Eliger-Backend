@@ -66,6 +66,9 @@ $app->post("/verify_reset_request", function () {
 $app->post("/reset_password", function () {
     Controller::post_router("reset_password_process");
 });
+$app->post("/verify_otp", function () {
+    Controller::post_router("verify_otp_process");
+});
 
 // admin
 $app->post("/create_hns", function () {
@@ -122,6 +125,9 @@ $app->post("/get_vehicle_current_location", function () {
 });
 $app->post("/online_payment", function () {
     Controller::post_router("/customer/online_payment_process");
+});
+$app->post("/delete_customer", function () {
+    Controller::post_router("/customer/delete_customer_process");
 });
 
 // owner
