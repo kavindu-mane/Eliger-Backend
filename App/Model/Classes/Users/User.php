@@ -461,10 +461,10 @@ class User
     // register function of user
     public function submitBankDetails($connection, $data)
     {
-        $query = "UPDATE bank_details SET Bank = ? , Branch = ? , Beneficiary_Name = ? , Acc_Number = ? , Statement_File = ? WHERE Email = ?";
+        $query = "UPDATE bank_details SET Bank = ? , Branch = ? , Beneficiary_Name = ? , Acc_Number = ? , Statement_File = ? , Status = 'pending' WHERE Email = ?";
         try {
 
-            if($this->bankDetailsStatus($connection) === "not submitted"){
+            if ($this->bankDetailsStatus($connection) === "not submitted") {
                 $query = "INSERT INTO bank_details (Bank, Branch, Beneficiary_Name, Acc_Number, Statement_File, Email) VALUES (?,?,?,?,?,?)";
             }
 

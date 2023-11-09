@@ -94,7 +94,9 @@ class Driver extends User
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $email);
             $pstmt->execute();
-            return json_encode($pstmt->fetch(PDO::FETCH_OBJ));
+            $rs = $pstmt->fetch(PDO::FETCH_ASSOC);
+            $rs["Bank_Status"] = $this->bankDetailsStatus($connection);
+            return json_encode($rs);
         } catch (PDOException $ex) {
             die("Registration Error : " . $ex->getMessage());
         }
