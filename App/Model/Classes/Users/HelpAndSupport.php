@@ -27,6 +27,7 @@ class HelpAndSupport extends User
         $this->name = $name;
         $this->email = $email;
     }
+    
     public function _construct0()
     {
     }

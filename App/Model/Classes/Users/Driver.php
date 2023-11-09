@@ -67,14 +67,13 @@ class Driver extends User
     // update function
     public function updateDriver($connection, $email, $data)
     {
-        $query = "update driver set Driver_firstname =? , Driver_lastname = ? , Driver_address = ? , Driver_Tel = ? where Email = ?";
+        $query = "update driver set Driver_firstname =? , Driver_lastname = ? , Driver_address = ? where Email = ?";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $data["fname"]);
             $pstmt->bindValue(2, $data["lname"]);
             $pstmt->bindValue(3, $data["address"]);
-            $pstmt->bindValue(4, $data["phone"]);
-            $pstmt->bindValue(5, $email);
+            $pstmt->bindValue(4, $email);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
                 return 200;

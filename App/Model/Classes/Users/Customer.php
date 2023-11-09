@@ -59,13 +59,12 @@ class Customer extends User
     // update function
     public function updateCustomer($connection, $email, $data)
     {
-        $query = "update customer set Customer_firstname =? , Customer_lastname = ? , Customer_Tel = ? where Email = ?";
+        $query = "update customer set Customer_firstname =? , Customer_lastname = ? where Email = ?";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $data["fname"]);
             $pstmt->bindValue(2, $data["lname"]);
-            $pstmt->bindValue(3, $data["phone"]);
-            $pstmt->bindValue(4, $email);
+            $pstmt->bindValue(3, $email);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
                 return 200;

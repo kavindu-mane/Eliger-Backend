@@ -222,6 +222,7 @@ class User
         }
     }
 
+    // generate random 6 number OTP
     public function generateOTP($connection)
     {
         try {
@@ -240,6 +241,7 @@ class User
         }
     }
 
+    // send OTP and verfiy email
     public function sendOTP($connection, $verificationCode)
     {
         try {
@@ -270,6 +272,71 @@ class User
                 }
             } else {
                 return 12;
+            }
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // send OTP to phone number change requiest
+    public function sendPhoneChangeOTP($connection, $email, $phone)
+    {
+        try {
+            $query = "SELECT full_name FROM users WHERE email = ?";
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                $result = $pstmt->fetch(PDO::FETCH_ASSOC);
+                $otp = $this->generateOTP($connection); // generate new OTP 
+                $query = "INSERT verification (Verification_Code , Email , Phone ,Type , RemoveTime) VALUES (?,?,?,?,date_add(now(),interval 5 minute))";
+                $pstmt = $connection->prepare($query);
+                $pstmt->bindValue(1, $otp);
+                $pstmt->bindValue(2, $email);
+                $pstmt->bindValue(3, $phone);
+                $pstmt->bindValue(4, "otp");
+                $pstmt->execute();
+
+                // msg for OTP
+                $msg = "Hello {$result['full_name']},\nYour OTP is: {$otp}. Please note that the OTP will be expired after 5 minutes.";
+                if (WhatsAppConnector::sendWhatsAppMessage($phone, $msg)) {
+                    return 200;
+                } else {
+                    return 12;
+                }
+            } else {
+                return 12;
+            }
+        } catch (Exception $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // verify OTP and change phone number
+    public function verifyPhoneChangeOTP($connection, $accountType, $otp, $email)
+    {
+        try {
+            $query = "SELECT Phone FROM verification WHERE Verification_Code = ?";
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $otp);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                $result = $pstmt->fetch(PDO::FETCH_ASSOC);
+                $query = "";
+                if ($accountType === "vehicle_owner") {
+                    $query = "UPDATE vehicle_owner SET Owner_Tel = ? WHERE Email = ?";
+                } elseif ($accountType === "customer") {
+                    $query = "UPDATE customer SET Customer_Tel = ? WHERE Email = ?";
+                } elseif ($accountType === "driver") {
+                    $query = "UPDATE driver SET Driver_Tel = ? WHERE Email = ?";
+                }
+                $pstmt = $connection->prepare($query);
+                $pstmt->bindValue(1, $result["Phone"]);
+                $pstmt->bindValue(2, $email);
+                $pstmt->execute();
+                if ($pstmt->rowCount() === 1) {
+                    return $this->verify($otp, $connection);
+                }
             }
         } catch (Exception $ex) {
             die("Registration Error : " . $ex->getMessage());
@@ -388,6 +455,50 @@ class User
             $email_connection->Subject = $subject;
             $email_connection->send();
             return 200;
+        }
+    }
+
+    // register function of user
+    public function submitBankDetails($connection, $data)
+    {
+        $query = "UPDATE bank_details SET Bank = ? , Branch = ? , Beneficiary_Name = ? , Acc_Number = ? , Statement_File = ? WHERE Email = ?";
+        try {
+
+            if($this->bankDetailsStatus($connection) === "not submitted"){
+                $query = "INSERT INTO bank_details (Bank, Branch, Beneficiary_Name, Acc_Number, Statement_File, Email) VALUES (?,?,?,?,?,?)";
+            }
+
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $data["bank"]);
+            $pstmt->bindValue(2, $data["branch"]);
+            $pstmt->bindValue(3, $data["beneficiary"]);
+            $pstmt->bindValue(4, $data["acc_number"]);
+            $pstmt->bindValue(5, $data["statement"]);
+            $pstmt->bindValue(6, $data["email"]);
+            $pstmt->execute();
+
+            return $pstmt->rowCount() === 1;
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load bank details status
+    public function bankDetailsStatus($connection)
+    {
+        $query = "SELECT Status FROM bank_details WHERE Email = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $_SESSION["user"]["id"]);
+            $pstmt->execute();
+
+            if ($pstmt->rowCount() === 1) {
+                $result = $pstmt->fetch(PDO::FETCH_ASSOC);
+                return $result["Status"];
+            }
+            return "not submitted";
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
         }
     }
 

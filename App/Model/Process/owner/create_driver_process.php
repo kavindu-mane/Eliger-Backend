@@ -25,7 +25,7 @@ if (isset($_SESSION["user"],)) {
     }
 
     // validate phone number
-    if (!preg_match('/^[0-9]{11}$/', $data_array["phone"])) {
+    if (!preg_match('/^94{1}[0-9]{9}$/', $data_array["phone"])) {
         echo 6;
         exit();
     }

@@ -63,14 +63,13 @@ class VehicleOwner extends User
     // update function
     public function updateOwner($connection, $email, $data)
     {
-        $query = "update vehicle_owner set Owner_firstname =? , Owner_lastname = ? , Owner_address = ? , Owner_Tel = ? where Email = ?";
+        $query = "update vehicle_owner set Owner_firstname =? , Owner_lastname = ? , Owner_address = ? where Email = ?";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $data["fname"]);
             $pstmt->bindValue(2, $data["lname"]);
             $pstmt->bindValue(3, $data["address"]);
-            $pstmt->bindValue(4, $data["phone"]);
-            $pstmt->bindValue(5, $email);
+            $pstmt->bindValue(4, $email);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
                 return 200;
@@ -83,13 +82,15 @@ class VehicleOwner extends User
     // load owner details
     public function loadOwner($connection, $email)
     {
-        $query = "select * from vehicle_owner_details where Email = ?";
+        $query = "SELECT * from vehicle_owner_details where Email = ?";
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $email);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
-                return json_encode($pstmt->fetch(PDO::FETCH_OBJ));
+                $rs = $pstmt->fetch(PDO::FETCH_ASSOC);
+                $rs["Bank_Status"] = $this->bankDetailsStatus($connection);
+                return json_encode($rs);
             } else {
                 return 14;
             }

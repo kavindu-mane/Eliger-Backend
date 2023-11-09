@@ -4,7 +4,7 @@ use EligerBackend\Model\Classes\Connectors\DBConnector;
 use EligerBackend\Model\Classes\Users\Driver;
 
 if (isset($_SESSION["user"])) {
-    $variable_array = array("fname", "lname", "phone", "address");
+    $variable_array = array("fname", "lname", "address");
     $data_array = array();
     foreach ($variable_array as $variable) {
         if (empty(strip_tags(trim($_POST[$variable])))) {
@@ -16,11 +16,6 @@ if (isset($_SESSION["user"])) {
         $data_array[$variable] = strip_tags(trim($_POST[$variable]));
     }
 
-    // validate phone number
-    if (!preg_match('/^[0-9]{11}$/', $data_array["phone"])) {
-        echo 6;
-        exit();
-    }
     $driver = new Driver();
     echo $driver->updateDriver(DBConnector::getConnection(), $_SESSION["user"]["id"], $data_array);
 } else {

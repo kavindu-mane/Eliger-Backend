@@ -69,6 +69,21 @@ $app->post("/reset_password", function () {
 $app->post("/verify_otp", function () {
     Controller::post_router("verify_otp_process");
 });
+$app->post("/login_driver_mobile", function () {
+    Controller::post_router("login_driver_mobile_process");
+});
+$app->post("/verify_phone_change", function () {
+    Controller::post_router("verify_phone_change_process");
+});
+$app->post("/request_phone_change", function () {
+    Controller::post_router("request_phone_change_process");
+});
+$app->post("/submit_bank_details", function () {
+    Controller::post_router("submit_bank_details_process");
+});
+$app->post("/check_bank_details", function () {
+    Controller::post_router("check_bank_details_process");
+});
 
 // admin
 $app->post("/create_hns", function () {

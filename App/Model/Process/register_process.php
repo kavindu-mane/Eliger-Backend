@@ -22,7 +22,7 @@ use EligerBackend\Model\Classes\Users\User;
 use EligerBackend\Model\Classes\Users\VehicleOwner;
 
 if (isset($_POST['captcha']) && !empty($_POST['captcha'])) {
-    $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $_ENV['CAPTCH_SECRET_KEY'] . '&response=' . $_POST['captcha']);
+    $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $_ENV['CAPTCHA_SECRET_KEY'] . '&response=' . $_POST['captcha']);
     $responseData = json_decode($verifyResponse);
     if ($responseData->success) {
 
@@ -40,7 +40,7 @@ if (isset($_POST['captcha']) && !empty($_POST['captcha'])) {
             }
 
             // validate phone number
-            if (!preg_match('/^[0-9]{11}$/', $data_array["phone"])) {
+            if (!preg_match('/^94{1}[0-9]{9}$/', $data_array["phone"])) {
                 echo 6;
                 exit();
             }
