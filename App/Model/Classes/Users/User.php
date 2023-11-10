@@ -502,6 +502,20 @@ class User
         }
     }
 
+    // load user bank details
+    public function loadBankDetails($connection)
+    {
+        $query = "SELECT Bank, Branch, Beneficiary_Name, Acc_Number, Status FROM bank_details WHERE EMAIL = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $_SESSION["user"]["id"]);
+            $pstmt->execute();
+            return $pstmt->fetch(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
     // getters
     public function getEmail()
     {

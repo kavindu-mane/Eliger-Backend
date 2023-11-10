@@ -84,6 +84,9 @@ $app->post("/submit_bank_details", function () {
 $app->post("/check_bank_details", function () {
     Controller::post_router("check_bank_details_process");
 });
+$app->post("/load_bank_details", function () {
+    Controller::post_router("load_bank_details_process");
+});
 
 // admin
 $app->post("/create_hns", function () {

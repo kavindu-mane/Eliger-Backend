@@ -4,7 +4,7 @@ use EligerBackend\Model\Classes\Connectors\DBConnector;
 use EligerBackend\Model\Classes\Users\Admin;
 use EligerBackend\Model\Classes\Users\User;
 
-if (isset($_SESSION["user"])) {
+if (isset($_SESSION["user"]) && $_SESSION["user"]["role"] === "admin") {
     if (isset($_POST["name"], $_POST["email"], $_POST["initial_password"], $_POST["confirm_initial_password"])) {
         // check any value is empty
         $variable_array = array("name", "email", "initial_password", "confirm_initial_password");

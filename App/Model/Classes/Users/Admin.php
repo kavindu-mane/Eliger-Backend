@@ -18,7 +18,7 @@ class Admin extends User
     }
 
     //load Accounts
-    public function loadAccountDetails($connection, $account_type, $status , $offset)
+    public function loadAccountDetails($connection, $account_type, $status, $offset)
     {
         $query = "WITH PaginatedResults AS ( SELECT * from customer_details where Account_Status=? )
                 SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
@@ -79,7 +79,7 @@ class Admin extends User
     }
 
     //Load new driver registrations
-    public function loadNewDriver($connection, $status , $offset)
+    public function loadNewDriver($connection, $status, $offset)
     {
         $query = "WITH PaginatedResults AS (
                 SELECT driver.*,vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname 
@@ -87,6 +87,30 @@ class Admin extends User
                 SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
                 FROM PaginatedResults
                 ORDER BY Driver_Id
+                LIMIT 15 OFFSET $offset";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $status);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    //Load new bank details
+    public function loadNewBankDetails(
+        $connection,
+        $status,
+        $offset
+    ) {
+        $query = "WITH PaginatedResults AS (
+                SELECT bank_details.*
+                FROM bank_details  WHERE bank_details.Status = ? )
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                ORDER BY Record_Id
                 LIMIT 15 OFFSET $offset";
 
         try {
@@ -121,9 +145,11 @@ class Admin extends User
     // Review Document function
     public function reviewDocument($connection, $type, $status, $Id)
     {
-        $query = "update driver set Status = ? where Driver_Id = ?";
+        $query = "UPDATE driver set Status = ? where Driver_Id = ?";
         if ($type === "vehicle") {
-            $query = "update vehicle set Status = ? where Vehicle_Id = ?";
+            $query = "UPDATE vehicle set Status = ? where Vehicle_Id = ?";
+        } elseif ($type === "bank") {
+            $query = "UPDATE bank_details set Status = ? where Email = ?";
         }
         try {
             $pstmt = $connection->prepare($query);
