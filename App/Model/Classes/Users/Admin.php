@@ -165,4 +165,63 @@ class Admin extends User
             die("Registration Error : " . $ex->getMessage());
         }
     }
+
+    // load payment eligible users
+    public function loadPaymentEligibleUsers($connection, $offset)
+    {
+        try {
+            $query = "WITH PaginatedResults AS (
+                SELECT(vehicle_owner_details.Income - vehicle_owner_details.Charges) AS Income ,
+                bank_details.Bank , bank_details.Branch , bank_details.Beneficiary_Name , bank_details.Acc_Number , bank_details.Status
+                FROM bank_details 
+                INNER JOIN vehicle_owner_details ON vehicle_owner_details.Email = bank_details.Email
+                UNION ALL
+                SELECT driver_details.Income AS Income ,
+                bank_details.Bank , bank_details.Branch , bank_details.Beneficiary_Name , bank_details.Acc_Number , bank_details.Status
+                FROM bank_details 
+                INNER JOIN driver_details ON driver_details.Email = bank_details.Email)
+                SELECT *, (SELECT COUNT(*) FROM PaginatedResults) AS total_rows
+                FROM PaginatedResults
+                WHERE Status = 'verified' AND Income > 1000
+                ORDER BY Bank
+                LIMIT 25 OFFSET $offset";
+            $pstmt = $connection->prepare($query);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load payment eligible users and categorize with bank
+    public function loadPaymentEligibleWithCategorize($connection)
+    {
+        $banks = array(
+            "People's Bank", "Bank of Ceylon", "Hatton National Bank", "Sampath Bank", "Commercial Bank", "NDB", "NSB",
+        );
+        $results = array();
+        try {
+            foreach ($banks as $bank) {
+                $query = "SELECT bank_details.Bank , bank_details.Branch , bank_details.Beneficiary_Name AS 'Beneficiary Name', bank_details.Acc_Number AS 'Acc Number',
+                (vehicle_owner_details.Income - vehicle_owner_details.Charges) AS Income
+                FROM bank_details 
+                INNER JOIN vehicle_owner_details ON vehicle_owner_details.Email = bank_details.Email
+                WHERE bank_details.Status = 'verified' AND Income > 1000 AND bank_details.Bank = ?
+                UNION ALL
+                SELECT bank_details.Bank , bank_details.Branch , bank_details.Beneficiary_Name AS 'Beneficiary Name', bank_details.Acc_Number AS 'Acc Number',
+                driver_details.Income AS Income
+                FROM bank_details 
+                INNER JOIN driver_details ON driver_details.Email = bank_details.Email
+                WHERE bank_details.Status = 'verified' AND Income > 1000 AND bank_details.Bank = ?";
+                $pstmt = $connection->prepare($query);
+                $pstmt->bindValue(1, $bank);
+                $pstmt->bindValue(2, $bank);
+                $pstmt->execute();
+                $results[$bank] = $pstmt->fetchAll(PDO::FETCH_OBJ);
+            }
+            return $results;
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
 }

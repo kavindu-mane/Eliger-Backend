@@ -104,6 +104,9 @@ $app->post("/document_validate", function () {
 $app->post("/disable_user", function () {
     Controller::post_router("/admin/disable_user_process");
 });
+$app->post("/load_payment_eligible_users", function () {
+    Controller::post_router("/admin/load_payment_eligible_users_process");
+});
 
 // help and support
 $app->post("/load_vehicles", function () {
