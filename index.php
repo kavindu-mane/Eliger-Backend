@@ -107,6 +107,18 @@ $app->post("/disable_user", function () {
 $app->post("/load_payment_eligible_users", function () {
     Controller::post_router("/admin/load_payment_eligible_users_process");
 });
+$app->post("/load_accounts_stats", function () {
+    Controller::post_router("/admin/load_accounts_stats_process");
+});
+$app->post("/load_vehicle_stats", function () {
+    Controller::post_router("/admin/load_vehicle_stats_process");
+});
+$app->post("/load_accounts_revenue", function () {
+    Controller::post_router("/admin/load_accounts_revenue_process");
+});
+$app->post("/load_accounts_bookings", function () {
+    Controller::post_router("/admin/load_accounts_bookings_process");
+});
 
 // help and support
 $app->post("/load_vehicles", function () {

@@ -2,6 +2,7 @@
 
 namespace EligerBackend\Model\Classes\Users;
 
+use EligerBackend\Model\Classes\Connectors\EmailConnector;
 use PDO;
 use PDOException;
 
@@ -142,6 +143,61 @@ class Admin extends User
         }
     }
 
+    public function getDetailsUsingDriverId($connection, $driverId)
+    {
+        $query = "SELECT driver.Driver_firstname , driver.Driver_lastname , driver.Email AS Driver_Email ,
+                vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname , vehicle_owner.Email AS Owner_Email
+                FROM driver INNER JOIN vehicle_owner
+                ON vehicle_owner.Owner_Id = driver.Owner_Id 
+                AND driver.Driver_Id = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $driverId);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return $pstmt->fetch(PDO::FETCH_OBJ);
+            }
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    public function getDetailsUsingVehicleId($connection, $vehicleId)
+    {
+        $query = "SELECT vehicle.Vehicle_PlateNumber , vehicle_owner.Owner_firstname , vehicle_owner.Owner_lastname , vehicle_owner.Email
+                FROM vehicle INNER JOIN vehicle_owner
+                ON vehicle_owner.Owner_Id = vehicle.Owner_Id
+                AND vehicle.Vehicle_Id = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $vehicleId);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return $pstmt->fetch(PDO::FETCH_OBJ);
+            }
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    public function getDetailsUsingEmail($connection, $email)
+    {
+        $query = "SELECT users.full_name
+                FROM users INNER JOIN bank_details
+                ON users.Email = bank_details.Email
+                AND bank_details.Email = ?";
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->bindValue(1, $email);
+            $pstmt->execute();
+            if ($pstmt->rowCount() === 1) {
+                return $pstmt->fetch(PDO::FETCH_OBJ);
+            }
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
     // Review Document function
     public function reviewDocument($connection, $type, $status, $Id)
     {
@@ -151,12 +207,38 @@ class Admin extends User
         } elseif ($type === "bank") {
             $query = "UPDATE bank_details set Status = ? where Email = ?";
         }
+
         try {
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $status);
             $pstmt->bindValue(2, $Id);
             $pstmt->execute();
             if ($pstmt->rowCount() === 1) {
+                if ($status === "rejected") {
+                    if ($type === "driver") {
+                        $details = $this->getDetailsUsingDriverId($connection, $Id);
+                        EmailConnector::sendActionEmail($details->Driver_firstname . " " . $details->Driver_lastname, "The driving license you submitted through Eliger has been rejected by the Administrator.", $details->Driver_Email, "Rejection of Driver Document");
+                        EmailConnector::sendActionEmail($details->Owner_firstname . " " . $details->Owner_lastname, "The driving license you submitted through Eliger has been rejected by the Administrator.", $details->Owner_Email, "Rejection of Driver Document");
+                    } elseif ($type === "vehicle") {
+                        $details = $this->getDetailsUsingVehicleId($connection, $Id);
+                        EmailConnector::sendActionEmail($details->Owner_firstname . " " . $details->Owner_lastname, "The vehicle documents you provided({$details->Vehicle_PlateNumber}) through the Eliger was rejected by the Administrator.", $details->Email, "Rejection of Vehicle Document");
+                    } elseif ($type === "bank") {
+                        $details = $this->getDetailsUsingEmail($connection, $Id);
+                        EmailConnector::sendActionEmail($details->full_name, "Please check your bank account statement and re-enter the details before submit.", $Id, "Rejection of Bank Document");
+                    }
+                } elseif ($status === "verified") {
+                    if ($type === "driver") {
+                        $details = $this->getDetailsUsingDriverId($connection, $Id);
+                        EmailConnector::sendActionEmail($details->Driver_firstname . " " . $details->Driver_lastname, "The driving license you submitted through Eliger has been approved by the Administrator.", $details->Driver_Email, "Approval of Driver Document");
+                        EmailConnector::sendActionEmail($details->Owner_firstname . " " . $details->Owner_lastname, "The driving license you submitted through Eliger has been approved by the Administrator.", $details->Owner_Email, "Approval of Driver Document");
+                    } elseif ($type === "vehicle") {
+                        $details = $this->getDetailsUsingVehicleId($connection, $Id);
+                        EmailConnector::sendActionEmail($details->Owner_firstname . " " . $details->Owner_lastname, "The vehicle documents you provided({$details->Vehicle_PlateNumber}) through the Eliger was approved by the Administrator.", $details->Email, "Approval of Vehicle Document");
+                    } elseif ($type === "bank") {
+                        $details = $this->getDetailsUsingEmail($connection, $Id);
+                        EmailConnector::sendActionEmail($details->full_name, "The bank details you entered through Eligar have been approved by the Administrator.", $Id, "Approval of Bank Document");
+                    }
+                }
                 return 200;
             } else {
                 return 500;
@@ -220,6 +302,120 @@ class Admin extends User
                 $results[$bank] = $pstmt->fetchAll(PDO::FETCH_OBJ);
             }
             return $results;
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load account statistics function
+    public function loadAccountStats($connection)
+    {
+        $query = "SELECT COUNT(*) AS count, Account_Type , 
+                CASE 
+                    WHEN Datetime BETWEEN NOW() - INTERVAL 30 DAY AND NOW() THEN 'current' 
+                    WHEN Datetime BETWEEN NOW() - INTERVAL 60 DAY AND NOW() THEN 'past' 
+                    ELSE 'old' 
+                END AS date_range 
+                FROM user WHERE Account_Type IN ('driver','customer','vehicle_owner') 
+                AND Datetime BETWEEN NOW() - INTERVAL 60 DAY AND NOW() 
+                GROUP BY Account_Type , date_range
+                ORDER BY Account_Type , date_range";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load vehicle statistics function
+    public function loadVehicleStats($connection)
+    {
+        $query = "SELECT COUNT(*) AS count, Vehicle_Type , 
+                CASE 
+                    WHEN Datetime BETWEEN NOW() - INTERVAL 30 DAY AND NOW() THEN 'current' 
+                    WHEN Datetime BETWEEN NOW() - INTERVAL 60 DAY AND NOW() THEN 'past' 
+                    ELSE 'old' 
+                END AS date_range 
+                FROM vehicle WHERE Vehicle_Type IN ('car','bike','tuk-tuk','van') 
+                AND Datetime BETWEEN NOW() - INTERVAL 60 DAY AND NOW() 
+                GROUP BY Vehicle_Type , date_range
+                ORDER BY Vehicle_Type , date_range";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load revenue statistics function
+    public function loadRevenueStats($connection)
+    {
+        $query = "SELECT SUM(Amount * 0.1) AS sum , 
+                CASE 
+                    WHEN DATE(Datetime) = DATE(NOW()) THEN 'current-1' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 7 DAY THEN 'past-1' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 1 DAY THEN 'current-2' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 8 DAY THEN 'past-2' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 2 DAY THEN 'current-3' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 9 DAY THEN 'past-3' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 3 DAY THEN 'current-4' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 10 DAY THEN 'past-4'
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 4 DAY THEN 'current-5' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 11 DAY THEN 'past-5' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 5 DAY THEN 'current-6' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 12 DAY THEN 'past-6' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 6 DAY THEN 'current-7' 
+                    WHEN DATE(Datetime) = DATE(NOW()) - INTERVAL 13 DAY THEN 'past-7'
+                    ELSE 'old' 
+                END AS date_range 
+                FROM payment WHERE Datetime BETWEEN NOW() - INTERVAL 14 DAY AND NOW() AND Booking_Id IS NOT NULL
+                GROUP BY date_range
+                ORDER BY date_range";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $ex) {
+            die("Registration Error : " . $ex->getMessage());
+        }
+    }
+
+    // load booking statistics function
+    public function loadBookingStats($connection)
+    {
+        $query = "SELECT COUNT(*) AS count , 
+                CASE 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) THEN 'current-1' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 7 DAY THEN 'past-1' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 1 DAY THEN 'current-2' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 8 DAY THEN 'past-2' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 2 DAY THEN 'current-3' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 9 DAY THEN 'past-3' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 3 DAY THEN 'current-4' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 10 DAY THEN 'past-4'
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 4 DAY THEN 'current-5' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 11 DAY THEN 'past-5' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 5 DAY THEN 'current-6' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 12 DAY THEN 'past-6' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 6 DAY THEN 'current-7' 
+                    WHEN DATE(Booking_Time) = DATE(NOW()) - INTERVAL 13 DAY THEN 'past-7'
+                    ELSE 'old' 
+                END AS date_range 
+                FROM booking WHERE Booking_Time BETWEEN NOW() - INTERVAL 14 DAY AND NOW() AND Booking_Id IS NOT NULL
+                GROUP BY date_range
+                ORDER BY date_range";
+
+        try {
+            $pstmt = $connection->prepare($query);
+            $pstmt->execute();
+            return $pstmt->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $ex) {
             die("Registration Error : " . $ex->getMessage());
         }

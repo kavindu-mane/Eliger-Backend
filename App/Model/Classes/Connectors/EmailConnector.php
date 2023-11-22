@@ -25,4 +25,18 @@ class EmailConnector
         }
         return $mail;
     }
+
+    public static function sendActionEmail($name, $msg, $email, $subject)
+    {
+        $email_template = __DIR__ . "/Email_Templates/actions.html";
+        $message = file_get_contents($email_template);
+        $message = str_replace('%user_name%', $name, $message);
+        $message = str_replace('%message%', $msg, $message);
+        $email_connection = EmailConnector::getEmailConnection();
+
+        $email_connection->msgHTML($message);
+        $email_connection->addAddress($email, $name);
+        $email_connection->Subject = $subject;
+        $email_connection->send();
+    }
 }

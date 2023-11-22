@@ -158,7 +158,8 @@ class Vehicle
     ) {
         try {
             $query = "SELECT * ,? as Journey_Starting_Date , ? as Journey_Ending_Date , Null as Booking_Id from (
-                SELECT * , COUNT(Vehicle_Id) as sorted_booking_count 
+                SELECT booking_count , Owner_Id , Vehicle_Id , Price , Vehicle_PlateNumber, Passenger_amount , Current_Lat , Driver_Id,
+                Vehicle_type , Current_Long , Feedback_count , Feedback_score , COUNT(Vehicle_Id) as sorted_booking_count 
                 FROM (SELECT COUNT(booking.Booking_Id) OVER (PARTITION BY booking.Vehicle_Id) as booking_count, vehicle.Owner_Id , vehicle.Vehicle_Id , 
                 vehicle.Price , vehicle.Vehicle_PlateNumber , vehicle.Passenger_amount , vehicle.Current_Lat , vehicle.Driver_Id,
                 vehicle.Vehicle_type , vehicle.Current_Long , vehicle.Feedback_count , vehicle.Feedback_score , booking.Booking_Id , 
@@ -170,7 +171,7 @@ class Vehicle
                 and vehicle.Vehicle_type = ? and vehicle.Driver_Id Is $driver
                 ORDER BY vehicle.Vehicle_Id) as vehicle_booking
                 WHERE Booking_Id IS Null or not (? <= Journey_Ending_Date and  ? >= Journey_Starting_Date)
-                GROUP BY Vehicle_Id) as sorted_vehicles
+                GROUP BY Vehicle_Id ,booking_count) as sorted_vehicles
                 WHERE sorted_booking_count = booking_count or booking_count = 0";
             $pstmt = $connection->prepare($query);
             $pstmt->bindValue(1, $start_date);
