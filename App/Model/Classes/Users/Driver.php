@@ -56,7 +56,9 @@ class Driver extends User
                 $pstmt->bindValue(7, $this->owner);
                 $pstmt->execute();
 
-                parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+                if ($pstmt->rowCount() === 1) {
+                    parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+                }
                 return $pstmt->rowCount() === 1;
             } catch (PDOException $ex) {
                 die("Registration Error : " . $ex->getMessage());

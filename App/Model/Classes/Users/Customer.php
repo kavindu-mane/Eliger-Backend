@@ -47,7 +47,9 @@ class Customer extends User
                 $pstmt->bindValue(4, $this->getEmail());
                 $pstmt->execute();
 
-                parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+                if ($pstmt->rowCount() === 1) {
+                    parent::sendVerificationEmail($connection, "{$this->firstName} {$this->lastName}", "register", "Verify your Eliger account", "registration");
+                }
 
                 return true;
             } catch (PDOException $ex) {

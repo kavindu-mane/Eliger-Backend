@@ -397,7 +397,7 @@ class User
             if ($pstmt->rowCount() < 1) break;
         }
 
-        $query = "insert into  verification (Verification_Code , Email , Type , RemoveTime) values(? , ? , ? , date_add(now(),interval 1 day))";
+        $query = "insert into verification (Verification_Code , Email , Type , RemoveTime) values(? , ? , ? , date_add(now(),interval 1 day))";
         $pstmt = $connection->prepare($query);
         $pstmt->bindValue(1, $code);
         $pstmt->bindValue(2, $this->email);

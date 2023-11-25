@@ -71,7 +71,10 @@ if (isset($_POST['captcha']) && !empty($_POST['captcha'])) {
 
             if ($_POST["account-type"] === "customer") {
                 $customer = new Customer($data_array["email"], $data_array["password"], "customer", $data_array["phone"], $data_array["fname"], $data_array["lname"]);
-                if ($customer->register(DBConnector::getConnection())) echo 200;
+                if ($customer->register(DBConnector::getConnection())) {
+                    echo 200;
+                    exit();
+                }
             } elseif ($_POST["account-type"] === "vehicle_owner") {
                 // check address field
                 if (empty(strip_tags(trim($_POST["address"])))) {

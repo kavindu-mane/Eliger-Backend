@@ -42,8 +42,9 @@ class HelpAndSupport extends User
                 $pstmt->bindValue(2, $this->email);
                 $pstmt->execute();
 
-                parent::sendVerificationEmail($connection, "{$this->name} {$this->email}", "register", "Registration of Help & Support account", "registration");
-
+                if ($pstmt->rowCount() === 1) {
+                    parent::sendVerificationEmail($connection, "{$this->name} {$this->email}", "register", "Registration of Help & Support account", "registration");
+                }
                 return true;
             } catch (PDOException $ex) {
                 die("Registration Error : " . $ex->getMessage());
